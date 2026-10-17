@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# PyCharm
+.idea/
+
+# Temporary search data
+work_*/
+pairs_*.bin
+results_*.csv
+*.tmp
+
+# Generated experiment outputs
+bricks_*.csv
+search_results.csv
+
+# System files
+.DS_Store
+Thumbs.dbcandidates.csv
+graph_bricks.csv
+strong_candidates.csv
+candidates.csv
