@@ -1,22 +1,29 @@
 # Euler Brick Research
 
-**Computational research into Euler bricks and the perfect cuboid problem**
+**Exact computational research into Euler bricks and the perfect cuboid problem**
 
-A Python research project for generating, validating, cataloging, and analyzing primitive Euler bricks using exact integer arithmetic.
+A Python research project dedicated to generating, validating, cataloging, and analyzing primitive Euler bricks using exact integer arithmetic.
 
-The project emphasizes reproducibility, independent validation, performance benchmarking, and preservation of verified computational results.
+The project focuses on:
+
+- Mathematically correct enumeration
+- Reproducible computational experiments
+- Independent result validation
+- Performance optimization
+- Version-controlled verified datasets
+- Investigation of the open perfect cuboid problem
 
 **Current search engine:** v0.7.1  
-**Largest completed search:** 5,000,000  
-**Primitive Euler bricks found:** 528  
+**Largest completed search:** 10,000,000  
+**Primitive Euler bricks found:** 704  
 **Perfect cuboids found:** 0  
-**Language:** Python 3.11 (standard library only)
+**Implementation:** Python 3.11, standard library only
 
 ---
 
-## 1. Mathematical background
+## 1. Mathematical Background
 
-An **Euler brick** is a rectangular cuboid with positive integer edges \(a,b,c\) such that all three face diagonals are integers:
+An **Euler brick** is a rectangular cuboid with positive integer edges \(a,b,c\), such that all three face diagonals are integers:
 
 \[
 a^2+b^2=x^2
@@ -30,7 +37,7 @@ a^2+c^2=y^2
 b^2+c^2=z^2
 \]
 
-A brick is **primitive** when:
+An Euler brick is **primitive** if:
 
 \[
 \gcd(a,b,c)=1
@@ -42,29 +49,28 @@ A **perfect cuboid** is an Euler brick whose space diagonal is also an integer:
 a^2+b^2+c^2=d^2
 \]
 
-The existence of a perfect cuboid is an unsolved mathematical problem.
+The existence of a perfect cuboid remains an open mathematical problem.
 
-A finite computational search cannot establish nonexistence in general.
+A finite computational search cannot prove that perfect cuboids do not exist.
 
 ---
 
-## 2. Research objectives
+## 2. Research Objectives
 
-The main goals of this project are:
+The project has several long-term objectives:
 
 1. Generate primitive Euler bricks efficiently.
-2. Search for perfect cuboid candidates using exact arithmetic.
-3. Validate all generated results independently.
-4. Maintain a version-controlled catalog of verified Euler bricks.
-5. Benchmark successive search-engine implementations.
-6. Extend searches to larger integer bounds.
-7. Investigate mathematical and computational improvements to the search process.
-
-Future experimental directions may include heuristic methods such as ant colony optimization (ACO) and particle swarm optimization (PSO), evaluated against exact-search baselines.
+2. Search for perfect cuboids using exact integer arithmetic.
+3. Independently validate generated results.
+4. Maintain a persistent, version-controlled catalog of verified Euler bricks.
+5. Compare the correctness and performance of successive search engines.
+6. Extend the computational search to increasingly large bounds.
+7. Explore mathematical constraints and computational optimizations.
+8. Investigate heuristic approaches such as ACO and PSO, with exact arithmetic verification.
 
 ---
 
-## 3. Repository structure
+## 3. Repository Structure
 
 ```text
 EulerBrickResearch/
@@ -93,6 +99,9 @@ EulerBrickResearch/
 │   └── v0.6.2/
 │       └── segmented_search.py
 │
+├── tests/
+│   └── test_regression.py
+│
 └── data/
     ├── verified_euler_bricks.csv
     └── verified_manifest.json
@@ -102,150 +111,170 @@ EulerBrickResearch/
 
 | Directory | Purpose |
 |---|---|
-| `src/` | Current stable search implementation |
-| `tools/` | Independent validation and catalog-management utilities |
-| `archive/` | Historical implementations preserved for reproducibility |
-| `data/` | Verified Euler brick catalog and metadata |
+| `src/` | Current stable search engine |
+| `tools/` | Validation and verified-catalog management |
+| `archive/` | Historical search implementations |
+| `tests/` | Automated regression tests |
+| `data/` | Version-controlled verified results and metadata |
 
-Experimental CSV outputs and temporary search workspaces are not committed to Git.
+Experimental CSV outputs and temporary workspaces are excluded from Git.
 
-The labels `v0.1` and `v0.2` in the archive are organizational labels for early implementations, not necessarily historical release tags.
+Early archive labels `v0.1` and `v0.2` are organizational labels and do not necessarily correspond to formal releases.
 
 ---
 
-## 4. Search methodology
+## 4. Search Methodology
 
-The current implementation uses a disk-backed segmented search.
+The search is based on exact generation of Pythagorean edge pairs and enumeration of compatible triples.
 
 ### 4.1 Pythagorean pair generation
 
-Compatible integer edge pairs are generated using Euclid's parametrization of primitive Pythagorean triples and their positive integer multiples.
-
-For integers \(m>n>0\), with:
+Primitive Pythagorean triples are generated using Euclid's parametrization:
 
 \[
-\gcd(m,n)=1
+u=m^2-n^2
 \]
-
-and opposite parity, the primitive Pythagorean triple is:
 
 \[
-(m^2-n^2,\ 2mn,\ m^2+n^2)
+v=2mn
 \]
 
-The two legs provide a pair of compatible cuboid edges.
+\[
+w=m^2+n^2
+\]
 
-### 4.2 Graph-based brick construction
+where:
 
-A graph is constructed conceptually in which:
+\[
+m>n>0,\quad \gcd(m,n)=1
+\]
 
-- Each vertex represents an integer edge length.
-- An edge connects two lengths when the sum of their squares is a perfect square.
+and \(m,n\) have opposite parity.
+
+Positive integer multiples of the primitive legs provide compatible pairs of Euler brick edges.
+
+### 4.2 Graph interpretation
+
+The search can be interpreted as a graph problem:
+
+- Vertices represent positive integer edge lengths.
+- Two vertices are connected if the sum of their squares is a perfect square.
 - A triangle corresponds to an Euler brick.
 
-The search enumerates compatible triples, retaining only primitive bricks with strictly ordered edges:
+The search retains primitive bricks with ordered edges:
 
 \[
 0<a<b<c\leq B
 \]
 
-where \(B\) is the configured maximum edge.
+where \(B\) is the maximum edge bound.
 
-### 4.3 Segmented processing
+### 4.3 Disk-backed segmented search
 
-Rather than retaining the complete graph in memory, the implementation distributes intermediate pairs into disk-backed segments.
+The implementation distributes generated Pythagorean pairs into disk-backed segments.
 
-This enables larger searches with bounded in-memory write buffers.
+This avoids storing the entire graph in memory and allows larger searches with bounded write buffers.
 
-### 4.4 Exact arithmetic
+### 4.4 Exact verification
 
-All square checks use Python's `math.isqrt`.
+Integer square tests use Python's `math.isqrt`.
 
-No floating-point approximation is used to determine whether a candidate is an Euler brick or a perfect cuboid.
+No floating-point approximation is used to decide whether a brick or a perfect cuboid is valid.
 
-Floating-point values are used only for optional numerical ranking and reporting.
+Floating-point calculations are used only for reporting and ranking approximate numerical gaps.
 
 ---
 
-## 5. Search engine versions
+## 5. Search Engine Development
 
-| Version | Main development |
+| Version | Description |
 |---|---|
-| Early prototypes | Initial Euler brick generation and graph exploration |
-| v0.5 | In-memory graph-based search |
+| Early prototypes | Initial Euler brick generators |
+| v0.5 | In-memory graph-based enumeration |
 | v0.6 | Disk-backed segmented search |
 | v0.6.1 | Buffered disk writing |
-| v0.6.2 | Globally bounded buffers, reference comparison, optional cleanup |
-| **v0.7.1** | **Optimized Pythagorean pair generation and segment processing** |
+| v0.6.2 | Bounded buffers, reference-output verification, workspace cleanup |
+| **v0.7.1** | **Optimized pair generation and faster segmented processing** |
 
-The current stable implementation is:
+The current implementation is:
 
 `src/segmented_search.py`
 
-Earlier implementations are preserved in `archive/`.
+Historical implementations are preserved in `archive/`.
 
-Git commits and tags preserve the history of the entire repository.
+Git history provides an additional record of project development.
 
-Existing baseline tag: `v0.6.2-baseline`.
+Baseline tag: `v0.6.2-baseline`.
 
 ---
 
-## 6. Computational results
+## 6. Computational Results
 
-All reported searches use primitive Euler bricks with maximum edge \(c\leq B\).
+All searches use primitive Euler bricks with maximum edge \(c\leq B\).
 
-### 6.1 Search results
+### 6.1 Enumeration results
 
 | Maximum edge | Pythagorean graph edges | Primitive Euler bricks | Perfect cuboids |
 |---|---:|---:|---:|
 | 1,000,000 | 2,269,788 | 242 | 0 |
 | 2,000,000 | 4,787,097 | 331 | 0 |
 | 5,000,000 | 12,786,105 | 528 | 0 |
+| **10,000,000** | **26,809,924** | **704** | **0** |
 
-The 5,000,000 search found 197 additional primitive Euler bricks compared with the 2,000,000 search.
+The search through 10,000,000 found **176 additional primitive Euler bricks** compared with the 5,000,000 search.
 
 ### 6.2 Performance benchmarks
 
-The following measurements were obtained from local Windows executions.
+Benchmarks were measured during local Windows executions.
 
-| Search bound | Engine | Pair generation | Segment processing | Total runtime |
+| Bound | Engine | Pair generation | Segment processing | Total runtime |
 |---|---|---:|---:|---:|
 | 1,000,000 | v0.6.2 | 12.083 s | 9.602 s | 21.715 s |
 | 2,000,000 | v0.6.2 | 32.661 s | 21.176 s | 53.880 s |
 | 5,000,000 | v0.6.2 | 86.577 s | 64.953 s | 151.612 s |
-| **5,000,000** | **v0.7.1** | **6.558 s** | **38.122 s** | **44.758 s** |
+| 5,000,000 | v0.7.1 | 6.558 s | 38.122 s | 44.758 s |
+| **10,000,000** | **v0.7.1** | **23.015 s** | **144.395 s** | **167.596 s** |
 
-At the 5,000,000 bound, v0.7.1 achieved:
+At the 5,000,000 bound, v0.7.1 was approximately **3.39 times faster overall** than v0.6.2.
 
-- Approximately **13.20× faster pair generation**.
-- Approximately **1.70× faster segment processing**.
-- Approximately **3.39× faster overall execution**.
+At the 10,000,000 bound, segment processing accounted for approximately **86% of total runtime**.
 
-These are observed benchmark results, not guaranteed speedups on other systems.
+This makes segment processing the primary optimization target for the next search-engine version.
 
-### 6.3 Result equivalence
+Runtime measurements are machine-dependent.
 
-The v0.7.1 search at 5,000,000 produced:
+### 6.3 Search verification
+
+The v0.7.1 search through 5,000,000 produced an identical set of 528 Euler bricks compared with v0.6.2:
+
+```text
+OUTPUT IDENTICAL: True; expected=528, actual=528, rows=528
+```
+
+The 10,000,000 run completed with:
 
 ```text
 VERIFICATION PASSED: bound=300, pairs=249, primitive bricks=2
 
-Pythagorean graph edges: 12786105
-
-OUTPUT IDENTICAL: True; expected=528, actual=528, rows=528
-
-Primitive Euler bricks: 528
+Pythagorean graph edges: 26809924
+Primitive Euler bricks: 704
 Perfect cuboids: 0
-Total time: 44.758s
+
+Pair generation: 23.015s
+Segment processing: 144.395s
+Consolidation: 0.176s
+Total time: 167.596s
 ```
 
-The result set was identical to the v0.6.2 reference output.
+The small-bound verification passed during the 10,000,000 run.
 
-This confirms agreement between the two implementations for that search, but is not an independent proof of completeness.
+Independent CSV validation of the 10,000,000 result and its inclusion in the verified catalog are separate steps.
+
+Agreement between search implementations and arithmetic validation increase confidence in the results but do not constitute a general proof of completeness.
 
 ---
 
-## 7. Numerical candidates
+## 7. Numerical Candidate Analysis
 
 For an Euler brick, define:
 
@@ -261,105 +290,113 @@ The square gap is:
 \Delta=|S-k^2|
 \]
 
-A useful normalized ranking quantity is:
+The approximate distance between the space diagonal and the nearest integer can be ranked using:
 
 \[
 \delta=\frac{|S-k^2|}{\lfloor\sqrt S\rfloor+k}
 \]
 
-This approximates the absolute distance between the space diagonal and the nearest integer.
+This provides a numerical ranking metric, not a criterion for mathematical existence.
 
-### Best candidate found through 5,000,000
-
-```text
-a = 37835
-b = 269280
-c = 1244484
-
-Square gap = 165
-Approximate diagonal distance = 0.000064765
-```
-
-Another notable candidate:
+### 7.1 Best candidate through 10,000,000
 
 ```text
-a = 330165
-b = 672220
-c = 3502992
-
-Square gap = 647
-Approximate diagonal distance = 0.000090309
+Edges: (37835, 269280, 1244484)
+Square gap: 165
+Approximate diagonal distance: 0.000064765
 ```
 
-Neither candidate is a perfect cuboid.
+### 7.2 Additional notable candidates
 
-A small numerical gap does not imply that a perfect cuboid exists or that the open problem is close to being solved.
+| Edges | Square gap | Approximate distance |
+|---|---:|---:|
+| (318175, 3357792, 6431880) | 1272 | 0.000087572 |
+| (330165, 672220, 3502992) | 647 | 0.000090309 |
+| (108108, 250800, 486875) | 1760 | 0.001576376 |
+| (28083, 43056, 105820) | 400 | 0.001700030 |
+
+The first candidate remains the closest found through 10,000,000 under this ranking metric.
+
+None is a perfect cuboid.
+
+A small numerical gap does not imply that a perfect cuboid exists.
 
 ---
 
-## 8. Independent validation
+## 8. Independent Validation
 
-The validation utility is:
+The independent validation utility is:
 
 `tools/validate_bricks.py`
 
-It checks:
+It verifies:
 
-- Positive integer edge lengths.
-- Strict ordering \(a<b<c\).
-- Primitivity.
-- All three face diagonals using exact integer arithmetic.
-- Maximum-edge bounds.
-- Duplicate records.
-- Perfect cuboid status.
-- Inclusion of previously validated subsets.
+- Positive integer edge lengths
+- Strict ordering \(a<b<c\)
+- Primitivity
+- Integral face diagonals
+- Maximum-edge constraints
+- Absence of duplicate records
+- Perfect cuboid status
+- Inclusion of previously validated datasets
 
-A small-bound cross-check against independent brute-force enumeration has been performed at \(B=300\):
+A small-bound independent cross-check at \(B=300\) confirmed:
 
 ```text
 Pythagorean pairs: 249
 Primitive Euler bricks: 2
 ```
 
-This provides a useful correctness check for the generator.
+Validation of the records confirms their arithmetic correctness.
 
-Arithmetic validation of output records does not by itself prove that the search found every Euler brick within a larger bound.
+It does not independently prove that every possible Euler brick within a large bound was found.
 
 ---
 
-## 9. Verified Euler brick catalog
+## 9. Verified Euler Brick Catalog
 
-The project maintains a persistent catalog of verified primitive Euler bricks:
+The repository maintains two version-controlled files:
 
 ```text
 data/verified_euler_bricks.csv
 data/verified_manifest.json
 ```
 
-The CSV stores the verified brick records.
+The CSV stores unique, arithmetically validated primitive Euler bricks.
 
-The JSON manifest records catalog metadata, including search bounds and integrity information.
+The manifest records catalog metadata, including the verified search bound, dataset count, integrity hash, and update history.
 
-The catalog is updated only after a successful independent validation of a new search result.
+The catalog is updated using:
 
-At the completed 5,000,000 bound, the verified dataset contains **528 unique primitive Euler bricks**.
+`tools/update_verified_catalog.py`
 
-The catalog is tracked in Git, allowing changes to be inspected and historical versions to be recovered.
+### Catalog update procedure
+
+1. Complete the new search.
+2. Validate the output independently.
+3. Verify that the previous catalog is a subset of the new results.
+4. Merge the new records into the catalog.
+5. Validate the updated catalog.
+6. Commit the updated CSV and manifest to Git.
+
+**Latest completed search:** 10,000,000, with 704 primitive Euler bricks.
+
+**Catalog status:** The 10,000,000 results are ready for independent validation and catalog update. The committed catalog should not be described as containing 704 records until those steps succeed.
 
 ---
 
 ## 10. Requirements
 
-- Python 3.11 or compatible Python 3 version.
-- No third-party Python dependencies.
-- Sufficient free disk space for intermediate search segments.
-- Windows, Linux, or macOS.
+- Python 3.11 or a compatible Python 3 version
+- Python standard library only
+- Sufficient free disk space for intermediate search segments
+- Windows, Linux, or macOS
 
-The project is developed and benchmarked primarily on Windows using PyCharm.
+Development and benchmark measurements have primarily been performed locally on Windows using PyCharm.
 
 ---
 
-## 11. Running the search
+## 11. Running the Search
 
 Run all commands from the repository root.
 
@@ -376,129 +413,154 @@ Primitive Euler bricks: 2
 Perfect cuboids: 0
 ```
 
-### 11.2 Search up to 5,000,000
+### 11.2 Search through 10,000,000
 
 ```powershell
-python src/segmented_search.py --max-edge 5000000 --segment-size 10000 --memory-limit-mb 32 --verify 300 --workdir work_5m --output bricks_5m.csv --cleanup
+python src/segmented_search.py --max-edge 10000000 --segment-size 10000 --memory-limit-mb 32 --verify 300 --workdir work_10m --output bricks_10m.csv --cleanup
 ```
 
-Expected:
+The completed v0.7.1 search found 704 primitive Euler bricks and no perfect cuboids.
+
+### 11.3 Independently validate the 10,000,000 output
+
+For the existing output file:
+
+```powershell
+python tools/validate_bricks.py --input bricks_071_10m.csv --max-edge 10000000 --subset data/verified_euler_bricks.csv --subset-max-edge 5000000
+```
+
+The subset bound assumes that the existing verified catalog covers 5,000,000.
+
+Expected result counts, if the existing catalog contains 528 records:
 
 ```text
-Primitive Euler bricks: 528
-Perfect cuboids: 0
+INPUT: bricks_071_10m.csv; rows=704; unique=704; perfect=0
+SUBSET: data/verified_euler_bricks.csv; rows=528; unique=528; missing=0
+VALIDATION PASSED
 ```
 
-### 11.3 Validate a search result
+### 11.4 Update the catalog
+
+Only after validation succeeds:
 
 ```powershell
-python tools/validate_bricks.py --input bricks_5m.csv --max-edge 5000000
+python tools/update_verified_catalog.py --input bricks_071_10m.csv --max-edge 10000000
 ```
 
-Expected final status:
+If the previous catalog contains 528 records, the expected update is:
+
+```text
+previous=528, added=176, total=704
+```
+
+### 11.5 Validate the updated catalog
+
+```powershell
+python tools/validate_bricks.py --input data/verified_euler_bricks.csv --max-edge 10000000
+```
+
+The expected final status is:
 
 ```text
 VALIDATION PASSED
 ```
 
-### 11.4 Compare against an existing catalog
+### 11.6 Run automated regression tests
 
 ```powershell
-python tools/validate_bricks.py --input bricks_5m.csv --max-edge 5000000 --subset data/verified_euler_bricks.csv --subset-max-edge 5000000
+python -m unittest discover -s tests -v
 ```
 
-This verifies that the previously cataloged bricks are present in the new output.
-
-For a new, larger search, the subset bound should match the previous verified catalog bound.
-
-### 11.5 Update the verified catalog
-
-Only after validation succeeds:
-
-```powershell
-python tools/update_verified_catalog.py --input bricks_5m.csv --max-edge 5000000
-```
-
-The catalog updater merges verified results and updates its manifest.
-
-Do not use a new search output to update the catalog before checking its validity.
+The regression suite is intended to detect changes that break known search and validation behavior.
 
 ---
 
-## 12. Reproducibility
+## 12. Reproducibility and Version Control
 
-Each research milestone should preserve:
+Every major computational milestone should record:
 
-1. The exact search-engine version.
-2. The maximum edge bound.
-3. The search parameters.
-4. The number of generated Pythagorean pairs.
-5. The number of primitive Euler bricks.
-6. The number of perfect cuboids.
-7. Runtime measurements.
-8. Validation results.
-9. The corresponding Git commit or tag.
+1. Search-engine version
+2. Maximum edge bound
+3. Search configuration
+4. Number of generated Pythagorean pairs
+5. Number of primitive Euler bricks
+6. Number of perfect cuboids
+7. Runtime breakdown
+8. Independent validation results
+9. Catalog update information
+10. Git commit or release tag
 
-Temporary workspaces and large experimental CSV outputs are excluded from version control.
+Historical implementations remain available under `archive/`.
 
-Verified catalog files remain tracked.
+Verified data remains under `data/`.
 
----
-
-## 13. Roadmap
-
-### Phase 1 — Completed
-
-- Exact Euler brick generation.
-- Graph-based enumeration.
-- Disk-backed segmented processing.
-- Bounded memory buffers.
-- Independent arithmetic validation.
-- Persistent verified catalog.
-- Search through 5,000,000.
-- Performance optimization in v0.7.1.
-
-### Phase 2 — Next
-
-- Reorganize the repository into `src/`, `tools/`, `archive/`, and `data/`.
-- Add automated regression tests.
-- Extend the search to 10,000,000.
-- Validate and merge new results into the catalog.
-- Investigate further segment-processing optimizations.
-
-### Phase 3 — Future
-
-- Resumable and checkpointed searches.
-- More systematic performance profiling.
-- Parallel and cloud-based experiments.
-- Mathematical filtering and candidate analysis.
-- Experimental ACO/PSO approaches with exact verification.
+Experimental CSV outputs and temporary search workspaces are excluded from Git.
 
 ---
 
-## 14. Scientific limitations
+## 13. Development Roadmap
 
-The search has not found a perfect cuboid through the tested maximum-edge bound of 5,000,000.
+### Completed
 
-This result is computational and finite.
+- Exact Pythagorean pair generation
+- Graph-based Euler brick enumeration
+- Disk-backed segmented search
+- Bounded write buffers
+- Independent arithmetic validator
+- Version-controlled verified catalog infrastructure
+- Repository reorganization
+- v0.7.1 search-engine optimization
+- Search through 10,000,000
 
-It does **not** establish that perfect cuboids do not exist.
+### Next steps
 
-Similarly, agreement between two search implementations, independent arithmetic validation, and small-bound brute-force checks increase confidence in the computational results but do not constitute a general mathematical proof.
+1. Independently validate the 10,000,000 dataset.
+2. Extend the verified catalog to 704 records.
+3. Commit the new catalog and updated documentation.
+4. Profile segment processing.
+5. Develop v0.7.2 with further performance improvements.
+6. Add stronger regression and completeness cross-checks.
+
+### Future research
+
+- Resumable searches and checkpointing
+- Parallel segment processing
+- Larger search bounds
+- Mathematical pruning techniques
+- Cloud execution
+- ACO/PSO experimental methods with exact verification
+
+---
+
+## 14. Scientific Limitations
+
+No perfect cuboid has been found in the completed search through maximum edge 10,000,000.
+
+This is a finite computational result.
+
+It is **not** a proof that perfect cuboids do not exist.
+
+Independent validation confirms arithmetic correctness of recorded candidates, while small-bound cross-checks and agreement between implementations provide additional evidence of search correctness.
+
+They do not replace a general mathematical proof.
 
 The perfect cuboid problem remains open.
 
 ---
 
-## 15. Project status
+## 15. Project Status
 
-**Current stable engine:** v0.7.1  
-**Maximum completed search:** 5,000,000  
-**Verified primitive Euler bricks:** 528  
-**Perfect cuboids discovered:** 0  
-**Next planned search:** 10,000,000  
+| Item | Current status |
+|---|---|
+| Search engine | v0.7.1 |
+| Largest completed bound | 10,000,000 |
+| Primitive Euler bricks found | 704 |
+| Perfect cuboids found | 0 |
+| Latest runtime | 167.596 s |
+| Main performance bottleneck | Segment processing |
+| Next planned engine | v0.7.2 |
 
-Repository: https://github.com/profzivkovic/EulerBrickResearch
+**Repository:** https://github.com/profzivkovic/EulerBrickResearch
 
 ---
 
