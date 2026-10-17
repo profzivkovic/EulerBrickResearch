@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "searched_max_edge": 2000000,
+  "brick_count": 331,
+  "perfect_cuboid_count": 0,
+  "sha256": "649726fe74fae44039328262052ebfb93a553635209651525de87ae38955e9b2",
+  "updated_utc": "2026-10-17T23:10:03.004725+00:00",
+  "source_file": "bricks_062_2m.csv",
+  "verification": "Exact arithmetic for every stored row; completeness of generator not independently proved"
+}
