@@ -1,65 +1,123 @@
 # Euler Brick Research
 
-Computational research into Euler bricks and the perfect cuboid problem.
+Computational research into Euler bricks and the open perfect cuboid problem.
 
-## Mathematical problem
+## Mathematical definitions
 
-An Euler brick is a triple of positive integers \((a,b,c)\) for which all three face diagonals are integers:
+An **Euler brick** is a triple of positive integers \(a,b,c\) for which all three face diagonals are integers:
 
-- \(a^2+b^2=x^2\)
-- \(a^2+c^2=y^2\)
-- \(b^2+c^2=z^2\)
+\[
+a^2+b^2=x^2,\qquad
+a^2+c^2=y^2,\qquad
+b^2+c^2=z^2.
+\]
 
-A perfect cuboid additionally requires an integer space diagonal:
+A **perfect cuboid** additionally requires an integer space diagonal:
 
 \[
 a^2+b^2+c^2=d^2.
 \]
 
-A brick is primitive when \(\gcd(a,b,c)=1\).
+A brick is **primitive** if \(\gcd(a,b,c)=1\).
 
-## Method
+The existence of a perfect cuboid remains an open mathematical problem.
 
-The search generates Pythagorean pairs using Euclid's parametrization and searches for compatible triples of edges.
+## Search approach
 
-The segmented implementation stores intermediate pairs on disk, processes segments independently, and supports result verification and optional temporary-file cleanup.
+The project uses exact integer arithmetic and Pythagorean-pair generation based on Euclid's parametrization.
 
-All integrality tests use exact integer arithmetic.
+The segmented search implementation:
 
-## Verified baseline
+- Generates compatible Pythagorean edge pairs.
+- Stores intermediate pairs in disk-backed segments.
+- Enumerates Euler brick candidates.
+- Uses `math.isqrt` for exact square tests.
+- Supports bounded write buffers and optional workspace cleanup.
+- Produces CSV output for subsequent validation.
 
-Search bound: maximum edge ≤ 1,000,000.
+The project uses Python 3.11 and the standard library.
 
-- Primitive Euler bricks found: **242**
-- Perfect cuboids found: **0**
-- Independent direct verification performed at bound 300
-- Segmented output matches the reference CSV containing 242 bricks
+## Computational results
 
-### Benchmark
+| Maximum edge | Primitive Euler bricks | Perfect cuboids | Runtime |
+|---|---:|---:|---:|
+| 1,000,000 | 242 | 0 | 21.715 s |
+| 2,000,000 | 331 | 0 | 53.880 s |
+| 5,000,000 | 528 | 0 | 151.612 s |
 
-Environment: Python 3.11, Windows, local execution.
+These runtimes were measured locally on Windows using `segmented_search_v062.py`. They are machine-dependent.
 
-Version v0.6.2:
+### Best numerical candidate
 
-- Pair generation: 12.083 seconds
-- Segment processing: 9.602 seconds
-- Consolidation: 0.018 seconds
-- Total runtime: 21.715 seconds
+Within the search bound of 5,000,000, the candidate with the smallest approximate absolute difference between its space diagonal and the nearest integer is:
 
-These are machine-dependent experimental measurements.
+**(37835, 269280, 1244484)**
 
-## Important limitation
+Its squared-space-diagonal gap from the nearest integer square is **165**, corresponding to an approximate diagonal difference of **0.000064765**.
 
-A finite search does not prove that perfect cuboids do not exist. The existence of a perfect cuboid remains an open mathematical problem.
+This is not a perfect cuboid, and numerical closeness does not imply existence.
+
+## Validation
+
+The project includes `validate_bricks_v07.py`, which independently checks CSV records for:
+
+- Positive, strictly ordered integer edges.
+- All three integral face diagonals.
+- Primitivity.
+- Duplicate records.
+- Maximum-edge bounds.
+- Integral space diagonals.
+- Inclusion of previously validated results.
+
+Direct enumeration cross-checks have also been performed for small bounds.
+
+CSV validation confirms the correctness of recorded bricks, but does not independently establish that the generator found every possible brick within a search bound.
+
+## Verified catalog
+
+The repository maintains a growing catalog:
+
+- `data/verified_euler_bricks.csv`
+- `data/verified_manifest.json`
+
+The catalog contains unique, arithmetically validated primitive Euler bricks.
+
+After a new search passes validation, `update_verified_catalog.py` merges its results into the catalog and updates the manifest.
+
+The catalog is version-controlled, while large experimental outputs and temporary workspaces are excluded from Git.
+
+## Running a search
+
+Example: search up to 5,000,000.
+
+```powershell
+python segmented_search_v062.py --max-edge 5000000 --segment-size 10000 --memory-limit-mb 32 --verify 300 --workdir work_062_5m --output bricks_062_5m.csv --cleanup
+```
+
+Validate the result against the existing catalog:
+
+```powershell
+python validate_bricks_v07.py --input bricks_062_5m.csv --max-edge 5000000 --subset data/verified_euler_bricks.csv --subset-max-edge 2000000
+```
+
+Update the catalog after successful validation:
+
+```powershell
+python update_verified_catalog.py --input bricks_062_5m.csv --max-edge 5000000
+```
+
+## Version history
+
+- **v0.5:** In-memory graph search and reference results.
+- **v0.6:** Disk-backed segmented search.
+- **v0.6.1:** Buffered disk writing.
+- **v0.6.2:** Bounded buffers, output comparison, and optional cleanup.
+- **v0.7:** Independent CSV validation and a persistent verified catalog.
+
+Baseline Git tag: `v0.6.2-baseline`.
 
 ## Roadmap
 
-1. Stabilize and validate local search implementations.
-2. Improve performance and memory efficiency.
-3. Extend exact searches to larger bounds.
-4. Prepare reproducible cloud execution.
-5. Investigate hybrid ACO/PSO methods and compare them against exact-search baselines.
-
-## Dependencies
-
-Python 3.11 or later. Standard library only.
+1. Improve local search performance and reproducibility.
+2. Extend exact searches to larger bounds.
+3. Strengthen independent completeness
