@@ -24,7 +24,7 @@ from array import array
 from pathlib import Path
 
 
-VERSION = "0.9.5"
+VERSION = "0.9.8"
 
 
 def is_square(n: int) -> bool:
@@ -66,30 +66,26 @@ def factorize(
     return factors
 
 
-def divisors_below_root(
-    root: int,
-    factors: list[tuple[int, int]],
-) -> list[int]:
-    """
-    Generate all divisors u of root**2 satisfying u < root.
-    """
+def divisors_below_root(root, factors):
+    """Iteratively generate divisors of root**2 smaller than root."""
     divisors = [1]
 
     for prime, exponent in factors:
-        powers = [1]
-        power = 1
+        next_divisors = []
 
-        for _ in range(2 * exponent):
-            power *= prime
-            powers.append(power)
+        for d in divisors:
+            value = d
 
-        divisors = [
-            d * p
-            for d in divisors
-            for p in powers
-        ]
+            for _ in range(2 * exponent + 1):
+                if value >= root:
+                    break
 
-    return [d for d in divisors if d < root]
+                next_divisors.append(value)
+                value *= prime
+
+        divisors = next_divisors
+
+    return divisors
 
 
 def compatible_even_legs(
