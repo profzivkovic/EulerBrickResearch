@@ -1,318 +1,142 @@
-# Euler Brick Research
+# EulerBrickResearch
 
-**Exact computational research into Euler bricks and the perfect cuboid problem**
+Reproducible, exact-integer research into **Euler bricks** and the **perfect cuboid problem**, using Python's standard library.
 
-EulerBrickResearch is a Python project for generating, validating, cataloging, and analyzing primitive Euler bricks using exact integer arithmetic.
+**Project status:** stable systematic search **v0.7.2**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**; number-theoretic research phase **v0.9.0 planned, not implemented**.
 
-The project emphasizes reproducible computation, independent arithmetic validation, version-controlled results, and performance optimization.
+> **Scientific scope:** A finite search, even one that finds no perfect cuboid, is **not a proof of nonexistence**. Heuristic experiments do not establish completeness. No perfect cuboid has been found in the experiments reported here.
 
-**Current experimental engine:** v0.7.2  
-**Largest completed search:** 10,000,000  
-**Primitive Euler bricks found:** 704  
-**Perfect cuboids found:** 0  
-**Implementation:** Python 3.11, standard library only
+## Mathematical problem
 
-## 1. Mathematical Background
-
-An Euler brick is a rectangular cuboid with positive integer edges \(a,b,c\) such that all three face diagonals are integers:
+For positive integer edges \(0<a<b<c\), an **Euler brick** has three integer face diagonals:
 
 \[
-a^2+b^2=x^2
+x^2=a^2+b^2,\qquad y^2=a^2+c^2,\qquad z^2=b^2+c^2.
 \]
+
+A brick is **primitive** if \(\gcd(a,b,c)=1\). A **perfect cuboid** is an Euler brick whose space diagonal is also an integer:
 
 \[
-a^2+c^2=y^2
+d^2=a^2+b^2+c^2.
 \]
 
-\[
-b^2+c^2=z^2
-\]
+All final square tests use exact integer arithmetic (`math.isqrt`); floating-point fitness values are used only to guide heuristic searches, not to certify solutions.
 
-An Euler brick is primitive when:
-
-\[
-\gcd(a,b,c)=1
-\]
-
-A perfect cuboid is an Euler brick whose space diagonal is also an integer:
-
-\[
-a^2+b^2+c^2=d^2
-\]
-
-The existence of a perfect cuboid remains an open mathematical problem.
-
-A finite computational search cannot establish nonexistence.
-
-## 2. Research Objectives
-
-The main objectives are:
-
-- Generate primitive Euler bricks efficiently.
-- Search for perfect cuboids using exact integer arithmetic.
-- Validate every recorded candidate independently.
-- Maintain a version-controlled verified catalog.
-- Compare results across search-engine versions.
-- Optimize performance while preserving mathematical correctness.
-- Extend the maximum search bound.
-- Explore mathematical pruning and alternative search methods.
-
-## 3. Repository Structure
+## Repository layout
 
 ```text
-EulerBrickResearch/
-├── README.md
-├── .gitignore
-├── src/
-│   ├── segmented_search.py
-│   └── segmented_search_v072.py
-├── tools/
-│   ├── validate_bricks.py
-│   └── update_verified_catalog.py
-├── data/
-│   ├── verified_euler_bricks.csv
-│   └── verified_manifest.json
-├── tests/
-│   └── test_regression.py
-└── archive/
-    ├── v0.1/
-    ├── v0.2/
-    ├── v0.5/
-    ├── v0.6/
-    ├── v0.6.1/
-    └── v0.6.2/
+src/
+  segmented_search.py        # stable systematic engine, v0.7.2
+  pso_search.py              # diversity-preserving PSO, v0.8.1
+  aco_search.py              # discrete ACO, v0.8.2
+tools/
+  validate_bricks.py         # independent catalog validation
+data/
+  verified_euler_bricks.csv  # verified systematic-search catalog
+  verified_manifest.json    # catalog provenance, where present
+experiments/
+  pso_080_runs.csv
+  bricks_pso_080.csv
+  pso_081_runs.csv
+  bricks_pso_081.csv
+  aco_082_runs.csv
+  bricks_aco_082.csv
+archive/
+  v0.7.1/                   # previous systematic engine
 ```
 
-`src/segmented_search.py` is the preserved v0.7.1 implementation.
+The tree above describes the relevant project files; some additional utilities may exist. The v0.8.0 PSO **results** are committed, but `src/pso_search.py` is the later v0.8.1 implementation. For full source-level reproduction of v0.8.0, its original script must also be preserved separately (for example, under `archive/v0.8.0/`). Do not treat v0.8.1 as the v0.8.0 source.
 
-`src/segmented_search_v072.py` is the optimized v0.7.2 implementation.
+## Stable systematic search: v0.7.2
 
-Historical implementations are retained in `archive/`.
+The systematic engine enumerates candidate integer relationships using Pythagorean structure and segmented processing, with exact final verification.
 
-The verified dataset and its metadata are stored in `data/`.
+Reported reference run:
 
-Experimental outputs and temporary workspaces should remain excluded from Git.
+| Quantity | Result |
+|---|---:|
+| Maximum edge bound | 10,000,000 |
+| Primitive Euler bricks | **704** |
+| Pythagorean graph edges | 26,809,924 |
+| Segments processed | 1,000 |
+| Total elapsed time | 109.960 s |
+| Perfect cuboids found | **0** |
 
-The repository structure above describes the intended layout; optional regression-test files should be present before their corresponding commands are used.
+The catalog is stored in `data/verified_euler_bricks.csv`. These numbers describe the recorded run and its search bounds, not an unbounded mathematical theorem. Runtime depends on the machine and environment.
 
-## 4. Search Methodology
+Example command (adjust memory and workspace settings for your machine):
 
-### 4.1 Pythagorean pair generation
+```powershell
+python src/segmented_search.py --max-edge 10000000 --segment-size 10000 --memory-limit-mb 32 --output bricks_072_10m.csv
+```
 
-Primitive Pythagorean triples are generated using Euclid's parametrization:
+Consult `python src/segmented_search.py --help` for all options. Validate any new catalog independently using `tools/validate_bricks.py` and its supported CLI options (`--help`). The historical v0.7.3 optimization trial was slower and was **not accepted** as a release; v0.7.2 remains the stable version.
 
-\[
-u=m^2-n^2,\quad v=2mn
-\]
+## Experimental metaheuristics: v0.8.0–v0.8.2
 
-with:
+These methods use two Euclidean Pythagorean triples, scaled to share a leg, to construct candidates with **at least two exact integer face diagonals**. The remaining face condition and space diagonal are checked using exact arithmetic. Optimization is heuristic: no completeness or existence/nonexistence guarantee is claimed.
 
-\[
-m>n>0,\quad \gcd(m,n)=1
-\]
+- **v0.8.0:** initial particle swarm optimization (PSO).
+- **v0.8.1:** PSO with neighborhoods, stagnation tracking and particle restarts to improve diversity.
+- **v0.8.2:** discrete ant colony optimization (ACO) with pheromone reinforcement, evaporation and exploration.
+- **RANDOM:** independently seeded random sampling under the same per-run evaluation budget, used as a baseline.
 
-and opposite parity for \(m,n\).
+Each experiment used **30 independent runs per method**, `--max-edge 10000000`, `--max-m 120`, and **64,320 candidate evaluations per run** for each method. The baseline is repeated in the three experiment files; it is not three independent sets of random-baseline findings.
 
-Integer multiples of the primitive legs generate Pythagorean edge pairs within the search bound.
+### Observed results
 
-### 4.2 Graph interpretation
-
-The search represents integer edge lengths as graph vertices.
-
-Two vertices are connected when the sum of their squares is a perfect square.
-
-Three mutually compatible vertices form an Euler brick.
-
-Only ordered primitive triples are retained:
-
-\[
-0<a<b<c\leq B
-\]
-
-where \(B\) is the maximum edge bound.
-
-### 4.3 Segmented disk-backed processing
-
-Generated Pythagorean pairs are written to disk-backed segments using bounded buffers.
-
-Segments are processed independently, and their results are consolidated into a CSV file.
-
-This approach avoids keeping the entire generated graph in memory.
-
-### 4.4 Exact arithmetic
-
-The engine uses `math.isqrt` for exact integer square tests.
-
-Floating-point arithmetic is not used to decide whether an Euler brick or perfect cuboid is valid.
-
-## 5. Search Engine Versions
-
-| Version | Main development |
-|---|---|
-| Early prototypes | Initial Euler brick generators |
-| v0.5 | In-memory graph enumeration |
-| v0.6 | Disk-backed segmented processing |
-| v0.6.1 | Buffered disk writes |
-| v0.6.2 | Bounded buffering and output verification |
-| v0.7.1 | Faster pair generation and segmented processing |
-| **v0.7.2** | **Modular square-residue filters in segment processing** |
-
-### 5.1 Optimization in v0.7.2
-
-Profiling v0.7.1 at a maximum edge of 1,000,000 showed approximately 22.3 million calls to the square-testing function.
-
-Version 0.7.2 introduces precomputed modular filters for moduli 64 and 63.
-
-Before evaluating whether:
-
-\[
-b^2+c^2
-\]
-
-is a perfect square, the engine checks whether its residues are compatible with square residues modulo both moduli.
-
-Candidates failing either filter are rejected without calling `math.isqrt`.
-
-Candidates passing the filters are still checked using exact integer arithmetic.
-
-The filters cannot reject a genuine perfect square because every integer square has an allowed residue.
-
-The underlying enumeration and CSV output format remain unchanged.
-
-## 6. Computational Results
-
-### 6.1 Enumeration
-
-| Maximum edge | Pythagorean graph edges | Primitive Euler bricks | Perfect cuboids |
+| Method | Mean primitive bricks / run | Mean unique candidates / run | Distinct bricks across 30 runs |
 |---|---:|---:|---:|
-| 1,000,000 | 2,269,788 | 242 | 0 |
-| 2,000,000 | 4,787,097 | 331 | 0 |
-| 5,000,000 | 12,786,105 | 528 | 0 |
-| **10,000,000** | **26,809,924** | **704** | **0** |
+| PSO v0.8.0 | 5.47 | 25,883 | 60 |
+| PSO v0.8.1 | 8.10 | 29,052 | 67 |
+| ACO v0.8.2 | 5.47 | 19,823 | 42 |
+| **RANDOM baseline** | **17.43** | **52,007** | **91** |
 
-The search through 10,000,000 found 176 additional primitive Euler bricks compared with the search through 5,000,000.
+These are descriptive results for the tested implementations, parameter settings and search space; they do **not** establish that random search is universally superior to PSO, ACO or other metaheuristics.
 
-### 6.2 Performance benchmarks
+All reported Euler-brick rows in the three experimental candidate CSV files were checked against the exact integer conditions in the corresponding experiment review. None was a perfect cuboid. Candidate CSV rows can contain the same brick in different runs; the **distinct bricks** column deduplicates by the triple `(a, b, c)` within each method's 30 runs. Experimental discoveries should not be added to the stable catalog without independent verification and a deliberate catalog-update process.
 
-The following measurements come from local Windows executions.
+### Reproduce PSO v0.8.1
 
-| Bound | Version | Pair generation | Segment processing | Total runtime |
-|---|---|---:|---:|---:|
-| 1,000,000 | v0.6.2 | 12.083 s | 9.602 s | 21.715 s |
-| 2,000,000 | v0.6.2 | 32.661 s | 21.176 s | 53.880 s |
-| 5,000,000 | v0.6.2 | 86.577 s | 64.953 s | 151.612 s |
-| 5,000,000 | v0.7.1 | 6.558 s | 38.122 s | 44.758 s |
-| 10,000,000 | v0.7.1 | 23.015 s | 144.395 s | 167.596 s |
-| 1,000,000 | v0.7.2 | 1.099 s | 5.639 s | 6.763 s |
-| **10,000,000** | **v0.7.2** | **15.148 s** | **94.670 s** | **109.960 s** |
-
-At the 10,000,000 bound, v0.7.2 completed approximately 1.52 times faster than the recorded v0.7.1 run.
-
-The measured reduction in total runtime was approximately 34.4%.
-
-Because pair generation also ran faster despite being unchanged, these measurements should not be interpreted as an isolated benchmark of the modular filtering optimization.
-
-Runtime measurements depend on hardware and execution conditions.
-
-### 6.3 Result comparison
-
-The v0.7.1 search through 5,000,000 matched the reference output:
-
-```text
-OUTPUT IDENTICAL: True; expected=528, actual=528, rows=528
+```powershell
+python src/pso_search.py --runs 30 --max-edge 10000000 --max-m 120 --particles 80 --iterations 200 --stagnation 12 --restart-fraction 0.30 --neighborhoods 5 --seed 42 --output bricks_pso_081.csv --summary-output pso_081_runs.csv
 ```
 
-The v0.7.2 search through 10,000,000 matched the verified catalog:
+### Reproduce ACO v0.8.2
 
-```text
-OUTPUT IDENTICAL: True; expected=704, actual=704, rows=704
+```powershell
+python src/aco_search.py --runs 30 --max-edge 10000000 --max-m 120 --ants 80 --iterations 200 --evaporation 0.20 --elite-fraction 0.20 --exploration 0.15 --seed 42 --output bricks_aco_082.csv --summary-output aco_082_runs.csv
 ```
 
-The comparison checks the set of edge triples and the number of output rows.
+The scripts require no third-party Python packages. Use `python src/pso_search.py --help` and `python src/aco_search.py --help` for the full parameter descriptions. CSV files contain per-run metrics and exact candidate data; use the committed `experiments/` files for comparison. Execution times are machine-dependent.
 
-Independent arithmetic validation of the v0.7.2 output is an additional verification step.
+### Interpretation and limitations
 
-## 7. Candidate Analysis
+The tested PSO and ACO configurations revisit many candidates and find fewer Euler bricks than the random baseline. A possible explanation is that the continuous-style fitness signal for near-square diagonals does not reliably predict exact integer solutions. This is a **hypothesis**, not a demonstrated mathematical law.
 
-For each Euler brick, define:
+Finding more Euler bricks is a useful benchmark, but it is **not equivalent** to finding a perfect cuboid. A smaller gap between an integer and a squared diagonal does not imply a nearby exact solution. Any newly proposed fitness function or algorithm must therefore be assessed against the random baseline using exact validation and multiple independent runs.
 
-\[
-S=a^2+b^2+c^2
-\]
+## Next research phase: v0.9.0 (planned)
 
-Let \(k\) be the nearest integer to \(\sqrt S\).
+The next proposed direction emphasizes mathematics over further routine PSO/ACO parameter tuning:
 
-The square gap is:
+1. Analyze the structure of the 704 verified primitive Euler bricks and known parameter families.
+2. Study exact parametrizations and number-theoretic constraints, including modular restrictions.
+3. Develop structured candidate generators that satisfy as many integer-diagonal conditions as possible by construction.
+4. Evaluate constraint-solving approaches and compare any new search against the v0.7.2 engine and an equal-budget random baseline.
+5. Keep mathematical claims, exhaustive bounded results and heuristic evidence explicitly separate.
 
-\[
-\Delta=|S-k^2|
-\]
+This is a research plan, **not** a claim that v0.9.0 has been implemented or that a perfect cuboid exists.
 
-For ranking purposes, the engine reports a normalized gap based on:
+## Reproducibility and integrity
 
-\[
-\delta=\frac{|S-k^2|}{\lfloor\sqrt S\rfloor+k}
-\]
+- Use exact `gcd` and `isqrt` checks to verify primitive edges, all three face diagonals and the space diagonal.
+- Keep random seeds, evaluation counts, algorithm parameters and per-run results alongside candidate CSVs.
+- Distinguish *evaluations*, *unique candidates*, *per-run discoveries* and *globally distinct discoveries*.
+- Avoid treating duplicate discoveries or repeated baseline runs as independent evidence.
+- Preserve stable releases; do not replace a validated systematic engine with an unverified optimization.
+- Treat the absence of a perfect cuboid within any finite bound as a bounded computational observation only.
 
-This is a numerical ranking measure, not a test for the existence of a perfect cuboid.
+## Project links
 
-### Best candidate found through 10,000,000
-
-```text
-Edges: (37835, 269280, 1244484)
-Square gap: 165
-Normalized gap: 0.000064765
-```
-
-Additional notable candidates:
-
-| Edges | Square gap | Normalized gap |
-|---|---:|---:|
-| (318175, 3357792, 6431880) | 1272 | 0.000087572 |
-| (330165, 672220, 3502992) | 647 | 0.000090309 |
-| (108108, 250800, 486875) | 1760 | 0.001576376 |
-| (28083, 43056, 105820) | 400 | 0.001700030 |
-
-None is a perfect cuboid.
-
-A small numerical gap does not establish the existence of a perfect cuboid.
-
-## 8. Verification and Validation
-
-### 8.1 Small-bound cross-check
-
-The engine independently compares generated Pythagorean pairs against direct enumeration at a small bound.
-
-For \(B=300\):
-
-```text
-VERIFICATION PASSED: bound=300, pairs=249, primitive bricks=2
-```
-
-### 8.2 Independent CSV validator
-
-The validator is:
-
-```text
-tools/validate_bricks.py
-```
-
-It checks:
-
-- Positive integer edges
-- Strict ordering
-- Maximum-edge bound
-- Primitivity
-- Integral face diagonals
-- Duplicate records
-- Perfect cuboid status
-- Inclusion of previously verified records
-
-The catalog through 10,000,000 has passed arithmetic validation:
-
-```text
-INPUT: data\verified_euler_bricks.csv; rows=704; unique=704; perfect=0
-VALIDATION PASSED
-```
-
-Arithmetic validation establishes correctness of the stored rows. It does not independently prove completeness
+GitHub: <https://github.com/profzivkovic/EulerBrickResearch>
