@@ -1,24 +1,19 @@
 
 #!/usr/bin/env python3
 """
-EulerBrickResearch - Odd-Leg Factorization Search v0.9.0 (experimental)
+EulerBrickResearch
+Odd-Leg Search v0.9.5 - Modulo-3 Pair Partition
 
-Complete bounded enumeration of primitive Euler bricks by factoring
-the square of their unique odd edge.
+Experimental complete search for primitive Euler bricks.
 
-For odd o and an integer face diagonal h:
+Key optimization:
+    Partition compatible even legs by divisibility by 3,
+    and generate only pair combinations compatible with
+    the proven modulo-3 structure of primitive Euler bricks.
 
-    h^2 = o^2 + e^2
-    (h-e)(h+e) = o^2
+The stable v0.9.0 implementation remains untouched.
 
-Every positive factor pair u*v=o^2, u<v, yields:
-    e = (v-u)//2
-    h = (v+u)//2
-
-The algorithm generates all eligible even legs e, checks all pairs,
-and verifies every accepted brick using exact integer arithmetic.
-
-Python 3.11+. Standard library only.
+Standard library only.
 """
 
 import argparse
@@ -29,26 +24,22 @@ from array import array
 from pathlib import Path
 
 
-VERSION = "0.9.0"
+VERSION = "0.9.5"
 
 
 def is_square(n: int) -> bool:
-    if n < 0:
-        return False
-    r = math.isqrt(n)
-    return r * r == n
+    root = math.isqrt(n)
+    return root * root == n
 
 
-def smallest_prime_factors(limit: int) -> array:
-    """Build a smallest-prime-factor sieve for 0..limit."""
+def build_spf(limit: int) -> array:
+    """Smallest-prime-factor sieve."""
     spf = array("I", range(limit + 1))
-
-    if limit >= 1:
-        spf[1] = 1
 
     for p in range(2, math.isqrt(limit) + 1):
         if spf[p] != p:
             continue
+
         for multiple in range(p * p, limit + 1, p):
             if spf[multiple] == multiple:
                 spf[multiple] = p
@@ -56,8 +47,10 @@ def smallest_prime_factors(limit: int) -> array:
     return spf
 
 
-def factorize(n: int, spf: array) -> list[tuple[int, int]]:
-    """Return [(prime, exponent), ...] for positive n."""
+def factorize(
+    n: int,
+    spf: array,
+) -> list[tuple[int, int]]:
     factors = []
 
     while n > 1:
@@ -73,14 +66,12 @@ def factorize(n: int, spf: array) -> list[tuple[int, int]]:
     return factors
 
 
-def square_divisors_below_root(
-    odd: int,
+def divisors_below_root(
+    root: int,
     factors: list[tuple[int, int]],
 ) -> list[int]:
     """
-    Generate all positive divisors u of odd^2 with u < odd.
-
-    Each u gives the complementary divisor v=odd^2//u.
+    Generate all divisors u of root**2 satisfying u < root.
     """
     divisors = [1]
 
@@ -93,78 +84,128 @@ def square_divisors_below_root(
             powers.append(power)
 
         divisors = [
-            d * power
+            d * p
             for d in divisors
-            for power in powers
+            for p in powers
         ]
 
-    return [d for d in divisors if d < odd]
+    return [d for d in divisors if d < root]
 
 
-def even_legs(
+def compatible_even_legs(
     odd: int,
     bound: int,
-    factors: list[tuple[int, int]],
+    spf: array,
 ) -> list[int]:
-    """Generate all even legs e <= bound compatible with odd."""
+    """
+    Enumerate all positive even legs e <= bound
+    for which odd**2 + e**2 is a perfect square.
+
+    For odd odd:
+        u*v = odd**2, u < odd < v
+        e = (v-u)//2
+    """
+    factors = factorize(odd, spf)
     odd_squared = odd * odd
+
     legs = []
 
-    for u in square_divisors_below_root(odd, factors):
+    for u in divisors_below_root(odd, factors):
         v = odd_squared // u
         e = (v - u) // 2
 
         if 0 < e <= bound:
             legs.append(e)
 
-    return sorted(set(legs))
+    return legs
 
 
 def verify_brick(
-    edges: tuple[int, int, int],
+    triple: tuple[int, int, int],
     bound: int,
 ) -> bool:
-    """Exact independent verification of a primitive Euler brick."""
-    a, b, c = edges
-
-    if not (0 < a < b < c <= bound):
-        return False
-
-    if math.gcd(math.gcd(a, b), c) != 1:
-        return False
+    a, b, c = triple
 
     return (
-        is_square(a * a + b * b)
-        and is_square(a * a + c * c)
-        and is_square(b * b + c * c)
+        0 < a < b < c <= bound
+        and math.gcd(math.gcd(a, b), c) == 1
+        and is_square(a*a + b*b)
+        and is_square(a*a + c*c)
+        and is_square(b*b + c*c)
     )
 
 
 def search(
     bound: int,
     progress_every: int,
-) -> tuple[set[tuple[int, int, int]], int]:
-    """Enumerate primitive Euler bricks up to maximum edge bound."""
-    print(f"Building SPF sieve up to {bound:,}...", flush=True)
-    spf = smallest_prime_factors(bound)
+) -> tuple[set[tuple[int, int, int]], dict]:
+    print(
+        f"Building SPF sieve up to {bound:,}...",
+        flush=True,
+    )
+
+    sieve_start = time.perf_counter()
+    spf = build_spf(bound)
+    sieve_seconds = time.perf_counter() - sieve_start
 
     bricks = set()
-    candidates_checked = 0
+
+    stats = {
+        "all_possible_pairs": 0,
+        "partition_pairs": 0,
+        "primitive_pairs": 0,
+        "rejected_nonprimitive": 0,
+        "isqrt_calls": 0,
+        "sieve_seconds": sieve_seconds,
+    }
+
     start = time.perf_counter()
 
+    gcd = math.gcd
+    isqrt = math.isqrt
+
     for odd in range(1, bound + 1, 2):
-        factors = factorize(odd, spf)
-        legs = even_legs(odd, bound, factors)
+        legs = compatible_even_legs(odd, bound, spf)
+        n = len(legs)
 
-        if len(legs) >= 2:
-            for i, e1 in enumerate(legs):
-                for e2 in legs[i + 1:]:
-                    candidates_checked += 1
+        if n < 2:
+            continue
 
-                    if math.gcd(math.gcd(odd, e1), e2) != 1:
+        stats["all_possible_pairs"] += n * (n - 1) // 2
+
+        divisible = []
+        nondivisible = []
+
+        for e in legs:
+            if e % 3 == 0:
+                divisible.append(e)
+            else:
+                nondivisible.append(e)
+
+        if odd % 3 == 0:
+            # Exactly one even edge divisible by 3.
+            #
+            # Iterate the Cartesian product of the two groups.
+            # No pair ordering is required: every pair occurs once.
+            stats["partition_pairs"] += (
+                len(divisible) * len(nondivisible)
+            )
+
+            for e1 in divisible:
+                e1_squared = e1 * e1
+
+                for e2 in nondivisible:
+                    if gcd(gcd(odd, e1), e2) != 1:
+                        stats["rejected_nonprimitive"] += 1
                         continue
 
-                    if not is_square(e1 * e1 + e2 * e2):
+                    stats["primitive_pairs"] += 1
+                    stats["isqrt_calls"] += 1
+
+                    n2 = e1_squared + e2 * e2
+                    root = isqrt(n2)
+
+                    if root * root != n2:
                         continue
 
                     triple = tuple(sorted((odd, e1, e2)))
@@ -172,34 +213,83 @@ def search(
                     if verify_brick(triple, bound):
                         bricks.add(triple)
 
-        if progress_every and odd % progress_every in (1, 2):
+        else:
+            # Both even edges must be divisible by 3.
+            m = len(divisible)
+            stats["partition_pairs"] += m * (m - 1) // 2
+
+            for i, e1 in enumerate(divisible):
+                e1_squared = e1 * e1
+                g1 = gcd(odd, e1)
+
+                for e2 in divisible[i + 1:]:
+                    if gcd(g1, e2) != 1:
+                        stats["rejected_nonprimitive"] += 1
+                        continue
+
+                    stats["primitive_pairs"] += 1
+                    stats["isqrt_calls"] += 1
+
+                    n2 = e1_squared + e2 * e2
+                    root = isqrt(n2)
+
+                    if root * root != n2:
+                        continue
+
+                    triple = tuple(sorted((odd, e1, e2)))
+
+                    if verify_brick(triple, bound):
+                        bricks.add(triple)
+
+        if (
+            progress_every
+            and (odd - 1) % progress_every == 0
+        ):
             elapsed = time.perf_counter() - start
+
             print(
                 f"Progress: odd={odd:,}/{bound:,}; "
                 f"bricks={len(bricks)}; "
-                f"candidates={candidates_checked:,}; "
+                f"partition_pairs="
+                f"{stats['partition_pairs']:,}; "
                 f"elapsed={elapsed:.2f}s",
                 flush=True,
             )
 
-    return bricks, candidates_checked
+    stats["search_seconds"] = (
+        time.perf_counter() - start
+    )
+
+    return bricks, stats
 
 
 def load_reference(
     path: Path,
     bound: int,
 ) -> set[tuple[int, int, int]]:
-    """Read reference CSV and retain only bricks within the bound."""
     reference = set()
 
-    with path.open("r", newline="", encoding="utf-8-sig") as f:
+    with path.open(
+        "r",
+        newline="",
+        encoding="utf-8-sig",
+    ) as f:
         reader = csv.DictReader(f)
 
-        if not {"a", "b", "c"}.issubset(reader.fieldnames or []):
-            raise ValueError("Reference CSV must contain a,b,c columns")
+        if not {"a", "b", "c"}.issubset(
+            reader.fieldnames or []
+        ):
+            raise ValueError(
+                "Reference CSV must contain a,b,c columns"
+            )
 
         for row in reader:
-            triple = tuple(int(row[key]) for key in ("a", "b", "c"))
+            triple = tuple(
+                sorted(
+                    int(row[k])
+                    for k in ("a", "b", "c")
+                )
+            )
 
             if triple[2] <= bound:
                 reference.add(triple)
@@ -211,89 +301,159 @@ def write_output(
     path: Path,
     bricks: set[tuple[int, int, int]],
 ) -> None:
-    """Write canonical, sorted Euler-brick CSV."""
-    path.parent.mkdir(parents=True, exist_ok=True)
+    path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
-    with path.open("w", newline="", encoding="utf-8") as f:
+    with path.open(
+        "w",
+        newline="",
+        encoding="utf-8",
+    ) as f:
         writer = csv.writer(f)
         writer.writerow(("a", "b", "c"))
 
-        for triple in sorted(bricks, key=lambda t: (t[2], t[0], t[1])):
+        for triple in sorted(
+            bricks,
+            key=lambda t: (t[2], t[0], t[1]),
+        ):
             writer.writerow(triple)
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__
+    )
 
     parser.add_argument(
         "--max-edge",
         type=int,
         required=True,
-        help="Maximum permitted edge",
     )
+
+    parser.add_argument(
+        "--reference",
+        type=Path,
+    )
+
     parser.add_argument(
         "--output",
         type=Path,
         required=True,
-        help="Output CSV path",
     )
-    parser.add_argument(
-        "--reference",
-        type=Path,
-        help="Optional verified catalog for exact set comparison",
-    )
+
     parser.add_argument(
         "--progress-every",
         type=int,
         default=100000,
-        help="Report progress after approximately this many odd edges",
     )
 
     args = parser.parse_args()
 
     if args.max_edge < 1:
-        parser.error("--max-edge must be positive")
+        parser.error(
+            "--max-edge must be positive"
+        )
 
     if args.progress_every < 0:
-        parser.error("--progress-every must be nonnegative")
+        parser.error(
+            "--progress-every must be nonnegative"
+        )
 
     print(
-        f"EULER BRICK RESEARCH - ODD-LEG SEARCH v{VERSION}",
+        f"EULER BRICK RESEARCH - ODD-LEG v{VERSION}",
         flush=True,
     )
-    print(f"Maximum edge: {args.max_edge:,}", flush=True)
+    print(f"Maximum edge: {args.max_edge:,}")
+    print("Mode: modulo-3 pair partition")
 
-    start = time.perf_counter()
+    total_start = time.perf_counter()
 
-    bricks, candidates_checked = search(
+    bricks, stats = search(
         args.max_edge,
         args.progress_every,
     )
 
     perfect = sum(
-        is_square(a * a + b * b + c * c)
+        is_square(a*a + b*b + c*c)
         for a, b, c in bricks
     )
 
     print()
     print(f"Primitive Euler bricks: {len(bricks)}")
     print(f"Perfect cuboids: {perfect}")
-    print(f"Candidate pairs tested: {candidates_checked:,}")
-    print(f"Elapsed: {time.perf_counter() - start:.3f}s")
+
+    print(
+        f"All possible pairs: "
+        f"{stats['all_possible_pairs']:,}"
+    )
+    print(
+        f"Pairs after modulo-3 partition: "
+        f"{stats['partition_pairs']:,}"
+    )
+    print(
+        f"Primitive candidate pairs: "
+        f"{stats['primitive_pairs']:,}"
+    )
+    print(
+        f"Rejected nonprimitive: "
+        f"{stats['rejected_nonprimitive']:,}"
+    )
+    print(
+        f"isqrt calls: "
+        f"{stats['isqrt_calls']:,}"
+    )
+
+    all_pairs = stats["all_possible_pairs"]
+    partition_pairs = stats["partition_pairs"]
+
+    reduction = (
+        100.0 * (all_pairs - partition_pairs) / all_pairs
+        if all_pairs
+        else 0.0
+    )
+
+    print(
+        f"Pair reduction: {reduction:.2f}%"
+    )
+    print(
+        f"Sieve time: "
+        f"{stats['sieve_seconds']:.3f}s"
+    )
+    print(
+        f"Search time: "
+        f"{stats['search_seconds']:.3f}s"
+    )
+    print(
+        f"Elapsed: "
+        f"{time.perf_counter() - total_start:.3f}s"
+    )
 
     if args.reference:
-        reference = load_reference(args.reference, args.max_edge)
+        reference = load_reference(
+            args.reference,
+            args.max_edge,
+        )
+
         missing = reference - bricks
         extra = bricks - reference
 
         print(
             f"REFERENCE: expected={len(reference)}; "
-            f"missing={len(missing)}; extra={len(extra)}"
+            f"missing={len(missing)}; "
+            f"extra={len(extra)}"
         )
 
         if missing or extra:
-            print(f"Missing examples: {sorted(missing)[:10]}")
-            print(f"Extra examples: {sorted(extra)[:10]}")
+            print(
+                f"Missing examples: "
+                f"{sorted(missing)[:10]}"
+            )
+            print(
+                f"Extra examples: "
+                f"{sorted(extra)[:10]}"
+            )
             print("REFERENCE MISMATCH")
             return 1
 
@@ -301,6 +461,7 @@ def main() -> int:
 
     write_output(args.output, bricks)
     print(f"Output: {args.output}")
+
     return 0
 
 
