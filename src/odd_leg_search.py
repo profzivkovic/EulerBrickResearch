@@ -1,8 +1,7 @@
-
 #!/usr/bin/env python3
 """
 EulerBrickResearch
-Odd-Leg Search v0.9.5 - Modulo-3 Pair Partition
+Odd-Leg Search v0.9.9 - Modulo-3 Pair Partition
 
 Experimental complete search for primitive Euler bricks.
 
@@ -11,7 +10,7 @@ Key optimization:
     and generate only pair combinations compatible with
     the proven modulo-3 structure of primitive Euler bricks.
 
-The stable v0.9.0 implementation remains untouched.
+Experimental variant; stable v0.9.8 remains untouched.
 
 Standard library only.
 """
@@ -24,7 +23,7 @@ from array import array
 from pathlib import Path
 
 
-VERSION = "0.9.8"
+VERSION = "0.9.9"
 
 
 def is_square(n: int) -> bool:
@@ -93,27 +92,41 @@ def compatible_even_legs(
     bound: int,
     spf: array,
 ) -> list[int]:
-    """
-    Enumerate all positive even legs e <= bound
-    for which odd**2 + e**2 is a perfect square.
-
-    For odd odd:
-        u*v = odd**2, u < odd < v
-        e = (v-u)//2
-    """
+    """Generate compatible even legs, without materializing final divisors."""
     factors = factorize(odd, spf)
+    if not factors:
+        return []
+
+    divisors = [1]
     odd_squared = odd * odd
 
-    legs = []
+    for index, (prime, exponent) in enumerate(factors):
+        last_factor = index == len(factors) - 1
 
-    for u in divisors_below_root(odd, factors):
-        v = odd_squared // u
-        e = (v - u) // 2
+        if last_factor:
+            legs = []
+            for d in divisors:
+                value = d
+                for _ in range(2 * exponent + 1):
+                    if value >= odd:
+                        break
+                    e = (odd_squared // value - value) // 2
+                    if 0 < e <= bound:
+                        legs.append(e)
+                    value *= prime
+            return legs
 
-        if 0 < e <= bound:
-            legs.append(e)
+        next_divisors = []
+        for d in divisors:
+            value = d
+            for _ in range(2 * exponent + 1):
+                if value >= odd:
+                    break
+                next_divisors.append(value)
+                value *= prime
+        divisors = next_divisors
 
-    return legs
+    return []
 
 
 def verify_brick(
@@ -189,9 +202,10 @@ def search(
 
             for e1 in divisible:
                 e1_squared = e1 * e1
+                g1 = gcd(odd, e1)
 
                 for e2 in nondivisible:
-                    if gcd(gcd(odd, e1), e2) != 1:
+                    if gcd(g1, e2) != 1:
                         stats["rejected_nonprimitive"] += 1
                         continue
 
