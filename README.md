@@ -2,7 +2,7 @@
 
 Reproducible, exact-integer research into **Euler bricks** and the **perfect cuboid problem**, using Python's standard library.
 
-**Project status:** stable segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, verified against the reference catalog through **10,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**. The verified catalog contains **1,884 primitive Euler bricks** through 100M.
+**Project status:** stable segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, verified against the reference catalog through **100,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**. The verified catalog contains **1,884 primitive Euler bricks** through 100M.
 
 > **Scientific scope:** No perfect cuboid was found in the finite searches and experiments reported here. This is **not a proof of nonexistence**. Exact validation certifies the arithmetic properties of reported rows, but does not by itself establish that a search implementation has found every solution within its bound. Heuristic experiments make no completeness claim.
 
@@ -189,8 +189,8 @@ Thus, for positive divisors \(u,v\) satisfying \(uv=o^2\), \(u<v\), and \(u\equi
 
 For any integer right triangle, if neither leg is divisible by 3, the sum of their squares is 2 modulo 3 and cannot be a square. Consequently, in a primitive Euler brick **exactly two of the three edges are divisible by 3**: at least two are required by the three face-diagonal conditions, while all three would contradict primitivity. Therefore:
 
-- If \(3\mid o\), both even edges must be divisible by 3.
 - If \(3\mid o\), exactly one of the two even edges must be divisible by 3.
+- If \(3\nmid o\), both even edges must be divisible by 3.
 
 The engine partitions compatible even legs accordingly and enumerates only allowed pairs. This is a mathematically justified filter, not an empirical heuristic.
 
@@ -207,7 +207,34 @@ The engine partitions compatible even legs accordingly and enumerates only allow
 
 The 1M figures are medians of **five interleaved runs per version**; the 10M figures are medians of **three interleaved runs per version**. Timings are environment-dependent, and earlier 10M sessions exhibited considerable variability. These are empirical speed comparisons, not complexity guarantees.
 
-At 10M, v0.9.9 examined **134,138,852** possible pairs, retained **69,526,974** after modulo-3 partitioning (48.17% reduction), and performed **33,697,155** integer-square-root tests on primitive candidate pairs. The 1M and 10M searches produced `EXACT SET MATCH` against the corresponding subsets of the 100M verified catalog. Agreement with the catalog is strong cross-validation, though not a formal audit of either implementation's completeness.
+At 10M, v0.9.9 examined **134,138,852** possible pairs, retained **69,526,974** after modulo-3 partitioning (48.17% reduction), and performed **33,697,155** integer-square-root tests on primitive candidate pairs.
+
+### Independent cross-validation through 100M
+
+The stable v0.9.9 implementation was subsequently run at 20M, 50M, and 100M without changing the algorithm. Every run produced `EXACT SET MATCH` against the corresponding subset of `data/verified_euler_bricks.csv`, with **zero missing rows, zero extra rows, and zero perfect cuboids**.
+
+| Maximum edge | Primitive bricks | v0.7.2 elapsed | v0.9.9 elapsed | v0.7.2 / v0.9.9 |
+|---:|---:|---:|---:|---:|
+| 10,000,000 | 704 | 109.960 s | 54.821 s* | 2.01x |
+| 20,000,000 | 943 | ~320.6 s† | 122.196 s | ~2.62x |
+| 50,000,000 | 1,395 | 1,040.977 s | 393.047 s | 2.65x |
+| 100,000,000 | **1,884** | 2,132.598 s | **1,119.861 s** | **1.90x** |
+
+*The 10M v0.9.9 figure is the median of three interleaved benchmark runs; the 20M, 50M, and 100M v0.9.9 figures are single runs. †The 20M segmented timing is approximate for the reason documented in the systematic-search section. These are recorded timings, not controlled head-to-head benchmarks; hardware load and storage conditions may vary.*
+
+| v0.9.9 metric | 20M | 50M | 100M |
+|---|---:|---:|---:|
+| All possible pairs | 311,733,835 | 943,628,669 | 2,170,029,622 |
+| Pairs after modulo-3 partition | 161,245,073 | 486,850,846 | 1,117,554,441 |
+| Primitive candidate pairs / `isqrt` calls | 76,248,717 | 223,212,641 | 501,018,824 |
+| Rejected nonprimitive pairs | 84,996,356 | 263,638,205 | 616,535,617 |
+| Pair reduction | 48.27% | 48.41% | 48.50% |
+| SPF sieve time | 3.474 s | 8.874 s | 19.023 s |
+| Search time | 118.715 s | 384.162 s | 1,100.810 s |
+| Total elapsed | 122.196 s | 393.047 s | 1,119.861 s |
+| Reference comparison | EXACT SET MATCH | EXACT SET MATCH | EXACT SET MATCH |
+
+At 100M, odd-leg v0.9.9 took approximately **18 minutes 40 seconds**, versus **35 minutes 33 seconds** for segmented v0.7.2, an observed **47.49% reduction in elapsed time**. The reference catalog remains the existing systematic-search catalog; these runs provide an independent enumerator cross-check, not a new catalog or a formal implementation-level proof of completeness. No perfect cuboid was found within the tested bound.
 
 ### Reproduce the odd-leg search
 
@@ -215,19 +242,17 @@ From the repository root in PowerShell:
 
 ```powershell
 python src/odd_leg_search.py `
-  --max-edge 10000000 `
+  --max-edge 100000000 `
   --reference data/verified_euler_bricks.csv `
-  --output odd_leg_10m.csv `
-  --progress-every 0
+  --output odd_leg_100m_v099.csv `
+  --progress-every 10000000
 ```
 
-Expected output includes `Primitive Euler bricks: 704`, `Perfect cuboids: 0`, and `EXACT SET MATCH`. The script writes canonical `(a,b,c)` triples to the specified CSV. Its CLI options are listed by `python src/odd_leg_search.py --help`.
-
-The independent odd-leg implementation has **not yet been benchmarked through 100M**. The 100M catalog currently comes from the segmented systematic search, not an odd-leg run at that bound.
+Expected output includes `Primitive Euler bricks: 1884`, `Perfect cuboids: 0`, `REFERENCE: expected=1884; missing=0; extra=0`, and `EXACT SET MATCH`. The script writes canonical `(a,b,c)` triples to the specified CSV. Its CLI options are listed by `python src/odd_leg_search.py --help`. At 100M the SPF array alone requires approximately 400 MB; total process memory can be higher. Use 64-bit Python and adequate available RAM.
 
 ## Next research steps
 
-1. **Extend independent validation:** run the stable odd-leg engine through 20M (expected catalog subset: 943 primitive bricks), then consider 50M and 100M subject to resource requirements.
+1. **Preserve independent 100M validation:** retain the exact-match logs and timing measurements for odd-leg v0.9.9; consider larger bounds only with a defined resource and catalog-validation plan.
 2. **Audit bounded completeness:** review the odd-leg divisor enumeration, edge bounds, modulo-3 proof, primitivity checks, and candidate-pair enumeration independently of catalog matching.
 3. **Investigate arithmetic structure:** analyze parity, prime-factor distributions, modular constraints, and exact space-diagonal square gaps; distinguish proofs from finite-data observations.
 4. **Benchmark carefully:** use interleaved repetitions and medians for future performance comparisons, retain the stable release, and promote experimental variants only after exact-set verification and repeatable gains.
