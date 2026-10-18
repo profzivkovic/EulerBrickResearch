@@ -2,135 +2,247 @@
 
 Reproducible, exact-integer research into **Euler bricks** and the **perfect cuboid problem**, using Python's standard library.
 
-**Project status (October 2026):** stable segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.8**, verified through **10,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**. The verified catalog contains **1,884 primitive Euler bricks** through 100M.
+**Project status:** stable segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, verified against the reference catalog through **10,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**. The verified catalog contains **1,884 primitive Euler bricks** through 100M.
 
-## Mathematical definitions
+> **Scientific scope:** No perfect cuboid was found in the finite searches and experiments reported here. This is **not a proof of nonexistence**. Exact validation certifies the arithmetic properties of reported rows, but does not by itself establish that a search implementation has found every solution within its bound. Heuristic experiments make no completeness claim.
 
-An **Euler brick** is a triple of positive integer edges \(a<b<c\) for which all three face diagonals are integers:
+## Mathematical problem
 
-\[
-\sqrt{a^2+b^2},\quad \sqrt{a^2+c^2},\quad \sqrt{b^2+c^2}\in\mathbb Z.
-\]
-
-A brick is **primitive** when \(\gcd(a,b,c)=1\). A **perfect cuboid** is an Euler brick whose space diagonal \(\sqrt{a^2+b^2+c^2}\) is also an integer.
-
-All candidate checks use integer arithmetic, including `math.isqrt`; floating-point square-root comparisons are not used as proofs of integrality.
-
-## Verified results
-
-| Maximum edge | Primitive Euler bricks | Search |
-| ---: | ---: | --- |
-| 1,000,000 | 242 | Odd-leg v0.9.8; exact catalog match |
-| 10,000,000 | 704 | Odd-leg v0.9.8; exact catalog match |
-| 20,000,000 | 943 | Segmented search v0.7.2 |
-| 50,000,000 | 1,395 | Segmented search v0.7.2 |
-| 100,000,000 | **1,884** | Segmented search v0.7.2 |
-
-**No perfect cuboid was found in these bounded searches.** This is not a proof that no perfect cuboid exists.
-
-The canonical catalog is `data/verified_euler_bricks.csv`, with metadata in `data/verified_manifest.json`. Validation and catalog maintenance utilities are in `tools/validate_bricks.py` and `tools/update_verified_catalog.py`.
-
-## Search implementations
-
-### Segmented systematic search — v0.7.2
-
-Source: `src/segmented_search.py`  
-Archived release: `archive/v0.7.2/segmented_search.py`
-
-This implementation builds a segmented graph of integer Pythagorean relationships and searches for triples with all three face diagonals integral. It provides the reference bounded catalog through a maximum edge of 100M.
-
-Recorded benchmarks:
-
-| Maximum edge | Primitive bricks | Graph edges | Elapsed |
-| ---: | ---: | ---: | ---: |
-| 10,000,000 | 704 | 26,809,924 | 109.960 s |
-| 20,000,000 | 943 | — | — |
-| 50,000,000 | 1,395 | — | — |
-| 100,000,000 | 1,884 | 309,224,756 | 2,132.598 s |
-
-### Independent odd-leg search — v0.9.8 (stable)
-
-Source: `src/odd_leg_search.py`  
-Archived release: `archive/v0.9.8/odd_leg_search.py`  
-Previous stable release: `archive/v0.9.5/odd_leg_search.py`
-
-Every primitive Euler brick has exactly one odd edge \(o\) and two even edges. For each odd edge, the algorithm factors \(o^2\) and enumerates divisor pairs
+For positive integer edges \(0<a<b<c\), an **Euler brick** has three integer face diagonals:
 
 \[
-u v=o^2,\qquad u<o<v,\qquad e=\frac{v-u}{2}.
+x^2=a^2+b^2,\qquad y^2=a^2+c^2,\qquad z^2=b^2+c^2.
 \]
 
-The resulting compatible even edges are paired and checked for primitiveness and for an integral remaining face diagonal. A smallest-prime-factor (SPF) sieve supports integer factorization.
+A brick is **primitive** if \(\gcd(a,b,c)=1\). A **perfect cuboid** is an Euler brick whose space diagonal is also an integer:
 
-**Modulo-3 partition:** exactly two edges of a primitive Euler brick are divisible by 3. Thus:
+\[
+d^2=a^2+b^2+c^2.
+\]
 
-- If `3 | o`, exactly one of the two even edges is divisible by 3.
-- If `3 ∤ o`, both even edges are divisible by 3.
+Final square tests use exact integer arithmetic (`math.isqrt`); floating-point fitness values are used only to guide heuristic searches, not to certify solutions.
 
-This partitions candidate pairs without excluding any primitive Euler brick.
+## Repository layout
 
-**Improvement in v0.9.8:** bounded **iterative divisor generation** stops extending a partial divisor once it reaches the odd edge. This avoids generating divisors that would later be discarded, while preserving all admissible divisors. The modulo-3 pairing and exact-integer tests remain unchanged.
+```text
+src/
+  segmented_search.py        # stable systematic engine, v0.7.2
+  odd_leg_search.py          # stable independent odd-leg engine, v0.9.9
+  pso_search.py              # diversity-preserving PSO, v0.8.1
+  aco_search.py              # discrete ACO, v0.8.2
+tools/
+  validate_bricks.py         # independent exact-arithmetic CSV validator
+  update_verified_catalog.py # guarded catalog and manifest updater
+data/
+  verified_euler_bricks.csv  # verified systematic-search catalog
+  verified_manifest.json    # bound, counts, checksum, and provenance
+experiments/
+  pso_080_runs.csv
+  bricks_pso_080.csv
+  pso_081_runs.csv
+  bricks_pso_081.csv
+  aco_082_runs.csv
+  bricks_aco_082.csv
+archive/
+  v0.7.1/                   # previous systematic engine
+  v0.9.5/                   # earlier odd-leg release
+  v0.9.8/                   # earlier odd-leg release
+  v0.9.9/                   # current stable odd-leg release
+```
 
-#### v0.9.8 validation and benchmarks
+This tree lists the main research files; local workspaces, raw outputs, backups, and other utilities may also exist. The v0.8.0 PSO **results** are committed, but `src/pso_search.py` contains the later v0.8.1 implementation. Full source-level reproduction of v0.8.0 requires preserving its original script separately (for example, under `archive/v0.8.0/`). Do not treat v0.8.1 as the v0.8.0 source.
 
-| Maximum edge | Bricks | Pairs after mod 3 | Primitive candidate pairs / `isqrt` calls | Elapsed |
-| ---: | ---: | ---: | ---: | ---: |
-| 1,000,000 | 242 | 4,089,066 | 2,169,432 | 4.304 s |
-| 10,000,000 | 704 | 69,526,974 | 33,697,155 | 60.250 s (initial run) |
+## Stable systematic search: v0.7.2
 
-Three additional 10M runs took **59.276 s**, **59.398 s**, and **58.708 s**, averaging **59.127 s**. All runs reported `EXACT SET MATCH` against the verified catalog and found zero perfect cuboids.
+The systematic engine generates integer Pythagorean leg pairs using Euclid's parametrization and integer multiples, stores them in segmented binary files, and examines compatible pairs of neighbors to identify Euler-brick candidates. The remaining face-diagonal condition, primitivity, and perfect-cuboid condition are checked using exact integer arithmetic.
 
-For comparison, recorded v0.9.5 timings were **4.726 s** at 1M and **61.853 s** at 10M. The 10M mean of three v0.9.8 repeat runs is approximately **4.41% lower** than the single recorded v0.9.5 timing. This is an indicative comparison, not a controlled paired benchmark.
+Every Euler brick corresponds to three mutually compatible Pythagorean leg pairs: equivalently, a triangle in the graph whose vertices are positive integers and whose edges join \(u,v\) when \(u^2+v^2\) is a perfect square. This provides a mathematical route to complete bounded enumeration **provided** that pair generation, bounds, segmentation, and candidate enumeration are all implemented without omissions. A formal, implementation-level completeness audit is a planned research task; the validator described below checks the **correctness of reported solutions**, not completeness.
 
-The v0.9.8 10M search considered **134,138,852** possible pairs, reduced to **69,526,974** by the modulo-3 partition (48.17% reduction), with **33,697,155** primitive candidates tested by `isqrt`.
+### Recorded systematic runs
 
-#### Reproduce odd-leg validation
+| Maximum edge \(c\) | Primitive Euler bricks | Additional bricks vs. previous bound | Pythagorean graph edges | Segments | Total elapsed time | Perfect cuboids |
+|---:|---:|---:|---:|---:|---:|---:|
+| 10,000,000 | **704** | — | 26,809,924 | 1,000 | 109.960 s | **0** |
+| 20,000,000 | **943** | +239 | 56,095,944 | 2,000 | approximately 320.6 s | **0** |
+| 50,000,000 | **1,395** | +452 | 148,422,582 | 5,000 | 1,040.977 s | **0** |
+| 100,000,000 | **1,884** | +489 | 309,224,756 | 10,000 | 2,132.598 s | **0** |
 
-Run from the repository root:
+The 20M timing is approximate because its initial run encountered a missing reference file at the optional output-comparison step; completed workspace data were then reused to consolidate the result. The other timings are as reported by the engine. Timings are machine- and storage-dependent.
+
+The **100M** run reported 231.096 s for pair generation, 1,899.320 s for segment processing, and 2.174 s for consolidation. The independent CSV validator reported **1,884 rows, 1,884 unique primitive Euler bricks, zero perfect cuboids**, and confirmed that all **1,395** entries in the 50M catalog occur in the 100M result. These checks establish row-level arithmetic validity and preservation of the previous catalog; they are not an independent proof of enumeration completeness.
+
+The final verified **100M** catalog is maintained at `data/verified_euler_bricks.csv`, with metadata and a SHA-256 checksum in `data/verified_manifest.json`. Raw outputs such as `bricks_100m.csv` are separate from the canonical catalog.
+
+### Reproduce a bounded search
+
+From the repository root in PowerShell:
 
 ```powershell
-python src/odd_leg_search.py `
-  --max-edge 1000000 `
-  --reference data/verified_euler_bricks.csv `
-  --output odd_leg_1m.csv `
-  --progress-every 100000
+python src/segmented_search.py `
+  --max-edge 100000000 `
+  --segment-size 10000 `
+  --memory-limit-mb 2048 `
+  --progress-every 1000 `
+  --workdir work_100m `
+  --output bricks_100m.csv
 ```
+
+This search can require substantial disk space and processing time. The `--memory-limit-mb` option governs pair-file buffering, **not** a hard limit on the process's total memory. A matching, completed pair-generation workspace can be reused, and finished segment outputs can be skipped when resuming. Preserve the workspace until output validation is complete; omit `--cleanup` if you intend to retain it.
+
+**Important:** `--verify-output` is for comparing against an **existing reference CSV** for the same bound; it is not a destination for a verification report. Do not specify a nonexistent file there.
+
+See `python src/segmented_search.py --help` for all options. The historical v0.7.3 optimization trial was slower and was **not accepted** as a release; v0.7.2 remains stable.
+
+### Independently validate and update the catalog
+
+First validate the new output and check that it contains every previously cataloged brick:
+
+```powershell
+python tools/validate_bricks.py `
+  --input bricks_100m.csv `
+  --max-edge 100000000 `
+  --subset data/verified_euler_bricks.csv `
+  --subset-max-edge 50000000
+```
+
+The subset bound above illustrates a **historical 50M-to-100M upgrade**. The current verified catalog is already at 100M; do not rerun this upgrade against the current catalog. For future updates, use the actual catalog bound recorded in `data/verified_manifest.json`. The validator checks sorted positive edges, bound, primitivity, all three integer face diagonals, uniqueness, and any supplied CSV metadata (including the space-diagonal tests and normalized gap).
+
+After `VALIDATION PASSED`, preserve a backup of the current catalog and manifest, then run:
+
+```powershell
+python tools/update_verified_catalog.py `
+  --input bricks_100m.csv `
+  --max-edge 100000000 `
+  --catalog data/verified_euler_bricks.csv `
+  --manifest data/verified_manifest.json
+```
+
+The updater independently checks every incoming triple, validates the existing catalog against its manifest and SHA-256 checksum, rejects a decreasing bound, and requires the incoming set to include **all** previously cataloged bricks. It then writes a canonical, deduplicated catalog and updated manifest. It does **not** silently repair a missing old result by taking a union.
+
+Finally, validate the updated catalog:
+
+```powershell
+python tools/validate_bricks.py `
+  --input data/verified_euler_bricks.csv `
+  --max-edge 100000000
+```
+
+For the 100M dataset, the expected successful result is `rows=1884; unique=1884; perfect=0` and `VALIDATION PASSED`. Only then review and commit the catalog and manifest. The updater's two-file replacement is not a single atomic transaction; if interrupted, its checksum check can detect an inconsistent catalog/manifest pair on a subsequent run.
+
+## Experimental metaheuristics: v0.8.0–v0.8.2
+
+These methods use two Euclidean Pythagorean triples, scaled to share a leg, to construct candidates with **at least two exact integer face diagonals**. The remaining face condition and space diagonal are checked using exact arithmetic. Optimization is heuristic: no completeness or existence/nonexistence guarantee is claimed.
+
+- **v0.8.0:** initial particle swarm optimization (PSO).
+- **v0.8.1:** PSO with neighborhoods, stagnation tracking, and particle restarts to improve diversity.
+- **v0.8.2:** discrete ant colony optimization (ACO) with pheromone reinforcement, evaporation, and exploration.
+- **RANDOM:** independently seeded random sampling under the same per-run evaluation budget, used as a baseline.
+
+Each experiment used **30 independent runs per method**, `--max-edge 10000000`, `--max-m 120`, and **64,320 candidate evaluations per run** for each method. The baseline is repeated in the three experiment files; it is not three independent sets of random-baseline findings.
+
+### Observed results
+
+| Method | Mean primitive bricks / run | Mean unique candidates / run | Distinct bricks across 30 runs |
+|---|---:|---:|---:|
+| PSO v0.8.0 | 5.47 | 25,883 | 60 |
+| PSO v0.8.1 | 8.10 | 29,052 | 67 |
+| ACO v0.8.2 | 5.47 | 19,823 | 42 |
+| **RANDOM baseline** | **17.43** | **52,007** | **91** |
+
+These are descriptive results for the tested implementations, parameters, and search space. They do **not** establish that random search is universally superior to PSO, ACO, or other metaheuristics.
+
+All reported Euler-brick rows in the three experimental candidate CSV files were checked against exact integer conditions in the corresponding experiment review. None was a perfect cuboid. Candidate CSV rows can repeat a brick across runs; the **distinct bricks** column deduplicates by `(a, b, c)` within each method's 30 runs. Experimental discoveries should not enter the stable catalog without independent verification and a deliberate catalog-update process.
+
+### Reproduce PSO v0.8.1
+
+```powershell
+python src/pso_search.py --runs 30 --max-edge 10000000 --max-m 120 --particles 80 --iterations 200 --stagnation 12 --restart-fraction 0.30 --neighborhoods 5 --seed 42 --output bricks_pso_081.csv --summary-output pso_081_runs.csv
+```
+
+### Reproduce ACO v0.8.2
+
+```powershell
+python src/aco_search.py --runs 30 --max-edge 10000000 --max-m 120 --ants 80 --iterations 200 --evaporation 0.20 --elite-fraction 0.20 --exploration 0.15 --seed 42 --output bricks_aco_082.csv --summary-output aco_082_runs.csv
+```
+
+The scripts require no third-party Python packages. Use `python src/pso_search.py --help` and `python src/aco_search.py --help` for full parameter descriptions. The committed `experiments/` CSVs contain per-run metrics and candidate data. Execution times depend on the machine.
+
+### Interpretation and limitations
+
+The tested PSO and ACO configurations revisit many candidates and find fewer Euler bricks than the random baseline. One possible explanation is that a continuous-style fitness signal for near-square diagonals does not reliably predict exact integer solutions. This is a **hypothesis**, not a mathematical theorem.
+
+Finding more Euler bricks is a useful benchmark, but it is **not equivalent** to finding a perfect cuboid. A small gap to a nearby square does not imply a nearby exact solution. New fitness functions or algorithms should be evaluated against random sampling with exact validation, matched evaluation budgets, and multiple independent runs.
+
+## Stable independent odd-leg search: v0.9.9
+
+The odd-leg engine (`src/odd_leg_search.py`) provides a second, number-theoretically structured bounded enumerator, independent of the segmented Pythagorean graph implementation. It uses exact integer arithmetic and the Python standard library.
+
+Every **primitive Euler brick** has exactly one odd edge, denoted \(o\), and two even edges \(e_1,e_2\). For any even edge \(e\) sharing an integer face diagonal with \(o\), factorization gives
+
+\[
+o^2+e^2=h^2,\qquad (h-e)(h+e)=o^2.
+\]
+
+Thus, for positive divisors \(u,v\) satisfying \(uv=o^2\), \(u<v\), and \(u\equiv v\pmod 2\), a compatible even edge is \(e=(v-u)/2\). Because \(o\) is odd, all divisors of \(o^2\) are odd, so the parity condition is automatic. The engine factors each odd \(o\) with a smallest-prime-factor (SPF) sieve, generates eligible divisors \(u<o\), constructs compatible even edges up to the requested bound, and tests their pairs. It checks primitivity, the remaining face diagonal, and the space diagonal with exact `math.gcd` and `math.isqrt` operations.
+
+### Proven modulo-3 pair partition
+
+For any integer right triangle, if neither leg is divisible by 3, the sum of their squares is 2 modulo 3 and cannot be a square. Consequently, in a primitive Euler brick **exactly two of the three edges are divisible by 3**: at least two are required by the three face-diagonal conditions, while all three would contradict primitivity. Therefore:
+
+- If \(3\mid o\), both even edges must be divisible by 3.
+- If \(3\mid o\), exactly one of the two even edges must be divisible by 3.
+
+The engine partitions compatible even legs accordingly and enumerates only allowed pairs. This is a mathematically justified filter, not an empirical heuristic.
+
+### Version history and benchmarks
+
+- **v0.9.5:** stable modulo-3 pair partition, using divisor generation from prime factorization.
+- **v0.9.8:** iterative bounded divisor generation; retained the exact candidate set and improved normal-run performance.
+- **v0.9.9 (current stable):** combines divisor generation with construction of compatible even legs, avoiding an intermediate final divisor list; also caches `gcd(odd, e1)` outside the inner pair loop when `odd` is divisible by 3.
+
+| Maximum edge | Primitive bricks | Perfect cuboids | v0.9.8 median | v0.9.9 median | Improvement |
+|---:|---:|---:|---:|---:|---:|
+| 1,000,000 | **242** | **0** | 4.303 s | **4.044 s** | **6.02%** |
+| 10,000,000 | **704** | **0** | 59.393 s | **54.821 s** | **7.70%** |
+
+The 1M figures are medians of **five interleaved runs per version**; the 10M figures are medians of **three interleaved runs per version**. Timings are environment-dependent, and earlier 10M sessions exhibited considerable variability. These are empirical speed comparisons, not complexity guarantees.
+
+At 10M, v0.9.9 examined **134,138,852** possible pairs, retained **69,526,974** after modulo-3 partitioning (48.17% reduction), and performed **33,697,155** integer-square-root tests on primitive candidate pairs. The 1M and 10M searches produced `EXACT SET MATCH` against the corresponding subsets of the 100M verified catalog. Agreement with the catalog is strong cross-validation, though not a formal audit of either implementation's completeness.
+
+### Reproduce the odd-leg search
+
+From the repository root in PowerShell:
 
 ```powershell
 python src/odd_leg_search.py `
   --max-edge 10000000 `
   --reference data/verified_euler_bricks.csv `
   --output odd_leg_10m.csv `
-  --progress-every 1000000
+  --progress-every 0
 ```
 
-Expected final checks: **242** or **704** primitive Euler bricks, respectively, `missing=0`, `extra=0`, and `EXACT SET MATCH`. Timing depends on hardware and runtime conditions.
+Expected output includes `Primitive Euler bricks: 704`, `Perfect cuboids: 0`, and `EXACT SET MATCH`. The script writes canonical `(a,b,c)` triples to the specified CSV. Its CLI options are listed by `python src/odd_leg_search.py --help`.
 
-## Experimental optimization phase
+The independent odd-leg implementation has **not yet been benchmarked through 100M**. The 100M catalog currently comes from the segmented systematic search, not an odd-leg run at that bound.
 
-Versions **v0.8.0–v0.8.2** investigated swarm-based heuristic approaches (including PSO and ACO). These are experimental search strategies, not completeness proofs. The systematic segmented and odd-leg algorithms provide the reproducible bounded-enumeration results.
+## Next research steps
 
-Unsuccessful intermediate odd-leg optimization experiments are not promoted or archived as stable releases. Version **v0.9.8** supersedes **v0.9.5** as the stable odd-leg implementation.
+1. **Extend independent validation:** run the stable odd-leg engine through 20M (expected catalog subset: 943 primitive bricks), then consider 50M and 100M subject to resource requirements.
+2. **Audit bounded completeness:** review the odd-leg divisor enumeration, edge bounds, modulo-3 proof, primitivity checks, and candidate-pair enumeration independently of catalog matching.
+3. **Investigate arithmetic structure:** analyze parity, prime-factor distributions, modular constraints, and exact space-diagonal square gaps; distinguish proofs from finite-data observations.
+4. **Benchmark carefully:** use interleaved repetitions and medians for future performance comparisons, retain the stable release, and promote experimental variants only after exact-set verification and repeatable gains.
 
-## Structural observations from the verified catalog
+## Reproducibility and integrity
 
-For the 1,884 primitive Euler bricks through 100M:
+- Verify primitive edges, all three face diagonals, and the space diagonal using exact `gcd` and `isqrt` checks.
+- Preserve search bounds, segment settings, source versions, and validation logs for systematic runs.
+- Maintain a canonical catalog with a checked manifest and SHA-256 digest; back up the catalog before updating it.
+- Keep random seeds, evaluation counts, algorithm parameters, and per-run results alongside heuristic candidate CSVs.
+- Distinguish **evaluations**, **unique candidates**, **per-run discoveries**, and **globally distinct discoveries**.
+- Avoid treating duplicate discoveries or repeated baseline results as independent evidence.
+- Preserve stable releases; do not replace a validated systematic engine with an unverified optimization.
+- Never interpret absence of a perfect cuboid within a finite bound as a proof of global nonexistence.
 
-- All have exactly **two edges divisible by 3**.
-- Both even edges are divisible by **4**.
-- In **1,393** bricks, both even edges have a nontrivial gcd with the odd edge; in **486**, exactly one does; in **5**, neither does.
-- In all cases, the gcd of those two individual gcd values is **1**, consistent with primitiveness.
+## Project links
 
-These catalog observations are distinct from proofs about all Euler bricks. The modulo-3 condition used by the odd-leg algorithm has a mathematical justification independent of the catalog.
-
-## Reproducibility and scope
-
-- Python standard library; no floating-point tolerance tests for integer diagonals.
-- Canonical primitive triples satisfy `0 < a < b < c`.
-- Compare complete sets of triples against the verified reference, not just counts.
-- Keep benchmark outputs, temporary CSV files, and catalog backups out of commits unless deliberately curated.
-- A bounded negative search result does **not** resolve the perfect cuboid problem.
-
-## Research directions
-
-Future work may include independent verification, profiling-guided improvements, larger bounded searches, and mathematically justified modular restrictions. Every optimization must preserve completeness within the declared search bound and pass exact catalog comparisons before promotion.
+GitHub: https://github.com/profzivkovic/EulerBrickResearch
