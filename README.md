@@ -2,7 +2,7 @@
 
 Reproducible, exact-integer research into **Euler bricks** and the **perfect cuboid problem**, using exact integer arithmetic in Python, with an optional NumPy/Numba-accelerated experimental engine.
 
-**Project status:** stable segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, independently cross-checked through **100,000,000** and extended with exact row validation through **200,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**; experimental fused Numba odd-leg engine **v0.10.4**, regression-tested through **200,000,000** and extended through **500,000,000** with independent exact-arithmetic row validation. The verified catalog contains **3,556 primitive Euler bricks** through 500M (1,047 additional bricks beyond 200M).
+**Project status:** stable segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, independently cross-checked through **100,000,000** and extended with exact row validation through **200,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**; experimental fused Numba odd-leg engine **v0.10.4**, regression-tested through **200,000,000** and extended through **500,000,000** with independent exact-arithmetic row validation. The verified catalog contains **3,556 primitive Euler bricks** through 500M (1,047 additional bricks beyond 200M). An exact-set comparison with Giovanni Resta's published OEIS table independently corroborates **all 3,556 triples** for largest edge strictly below 500M.
 
 > **Scientific scope:** No perfect cuboid was found in the finite searches and experiments reported here. This is **not a proof of nonexistence**. Exact validation certifies the arithmetic properties of reported rows, but does not by itself establish that a search implementation has found every solution within its bound. Heuristic experiments make no completeness claim.
 
@@ -35,6 +35,8 @@ tools/
   validate_bricks.py         # independent exact-arithmetic CSV validator
   update_verified_catalog.py # guarded catalog and manifest updater
   audit_odd_leg.py           # bounded independent audit of stable v0.9.9
+  compare_oeis_resta.py      # exact-set comparison against external OEIS table
+  analyze_brick_distribution.py # empirical distribution and holdout analysis
 data/
   verified_euler_bricks.csv  # verified systematic-search catalog
   verified_manifest.json    # bound, counts, checksum, and provenance
@@ -311,7 +313,7 @@ On 2026-10-19 (UTC), experimental v0.10.4 completed a bounded search with maximu
 
 The independent exact-arithmetic CSV validator reported `rows=3556; unique=3556; perfect=0` and `VALIDATION PASSED`. A subset check against the previous 200M catalog reported `rows=2509; unique=2509; missing=0`. After the guarded catalog update, `data/verified_euler_bricks.csv` was validated again with `rows=3556; unique=3556; perfect=0` and `VALIDATION PASSED`. The manifest records the 500M bound, row count, SHA-256 digest, source file, and verification limitation. The raw output `odd_leg_numba_104_500m.csv` is a local generated artifact, not part of the committed canonical catalog.
 
-**Evidence boundary:** the segmented and stable odd-leg enumerators independently agreed through 100M. At 200M, stable v0.9.9 and experimental v0.10.4 agreed on the exact set. The 500M extension comes from the Numba odd-leg implementation; every reported row passed independent arithmetic validation and all previously cataloged 200M rows were preserved. These checks do **not** independently prove enumeration completeness at 500M. The absence of a perfect cuboid in this finite run is not a proof of global nonexistence.
+**Evidence boundary:** the segmented and stable odd-leg enumerators independently agreed through 100M. At 200M, stable v0.9.9 and experimental v0.10.4 agreed on the exact set. The 500M extension comes from the Numba odd-leg implementation; every reported row passed independent arithmetic validation and all previously cataloged 200M rows were preserved. These algorithm-internal checks do **not** independently prove enumeration completeness at 500M. Subsequently, an exact-set comparison against Giovanni Resta's published OEIS table independently corroborated all 3,556 triples for largest edge strictly below 500M (see below). The absence of a perfect cuboid in this finite run is not a proof of global nonexistence.
 
 To reproduce the 500M search from the repository root in PowerShell (requires substantial available RAM):
 
@@ -350,18 +352,85 @@ python tools/audit_odd_leg.py --source src/odd_leg_search.py --max-edge 3000 --s
 
 These are finite bounded checks, **not** formal proofs. This audit directly targets v0.9.9, not the Numba kernel. The latter is checked against the reference catalog and by the stable engine's exact candidate verifier.
 
+## Independent published-catalog comparison (500M)
+
+On 2026-10-19 (UTC), the local verified catalog was compared, **triple by triple**, with Giovanni Resta's table linked from [OEIS A031173](https://oeis.org/A031173). The comparison used the **strict** bound `c < 500000000` (largest edge), whereas the search engine accepts an inclusive maximum edge. All 3,556 local rows and all 3,556 reference rows were below the strict bound; hence no boundary discrepancy occurred.
+
+| Exact-set comparison | Result |
+|---|---:|
+| Local catalog: total / below bound | 3,556 / 3,556 |
+| OEIS reference: total / below bound | 3,556 / 3,556 |
+| Missing from local catalog | **0** |
+| Extra in local catalog | **0** |
+| Outcome | **EXACT SET MATCH** |
+
+External reference URL: https://oeis.org/A031173/a031173.txt
+
+SHA-256 of the downloaded reference file:
+
+```text
+ e6e7cdd287fd151e9dd7516d1e3c86beb656f22fa9e02de39fdd844240fd3945
+```
+
+The external table is **not committed to this repository**. Download it locally using PowerShell (avoids a Python 3.11/Windows certificate-store error observed in the original HTTPS download attempt):
+
+```powershell
+New-Item -ItemType Directory -Force references | Out-Null
+Invoke-WebRequest `
+  -Uri "https://oeis.org/A031173/a031173.txt" `
+  -OutFile "references/resta_a031173.txt"
+Get-FileHash references/resta_a031173.txt -Algorithm SHA256
+```
+
+Compare against the canonical catalog:
+
+```powershell
+python tools/compare_oeis_resta.py `
+  --input data/verified_euler_bricks.csv `
+  --resta-file references/resta_a031173.txt `
+  --max-edge 500000000
+```
+
+The recorded output was `MISSING_FROM_LOCAL: 0`, `EXTRA_IN_LOCAL: 0`, and `EXACT SET MATCH`. The checksum identifies the exact external reference snapshot used. This **independently corroborates the catalog against a published enumeration**; it is not a formal proof of completeness of either enumerator or a resolution of the perfect cuboid problem. Keep `references/resta_a031173.txt` excluded from Git (see `.gitignore`).
+
+## Empirical distribution analysis (v0.11.0)
+
+`tools/analyze_brick_distribution.py` reads the canonical catalog without modifying it and reports cumulative counts, new bricks per million edge units, and local log-log exponents. The observed counts are:
+
+| Largest-edge bound | Cumulative primitive bricks |
+|---:|---:|
+| 10,000,000 | 704 |
+| 20,000,000 | 943 |
+| 50,000,000 | 1,395 |
+| 100,000,000 | 1,884 |
+| 200,000,000 | 2,509 |
+| 500,000,000 | 3,556 |
+
+A descriptive power-law fit to the five cumulative counts from 10M through 200M gave `N(B) ≈ 0.73913352 × B^0.425514`. The held-out prediction at 500M was **3,717.5**, compared with **3,556** observed (relative error **+4.54%**). The final three of twelve logarithmic intervals gave local exponents **0.4069**, **0.3884**, and **0.3878**. These are finite-range empirical observations, not an established asymptotic law. Cumulative observations are dependent, and a single held-out extrapolation is not an uncertainty estimate.
+
+Reproduce the analysis:
+
+```powershell
+python tools/analyze_brick_distribution.py `
+  --input data/verified_euler_bricks.csv `
+  --log-bins 12 `
+  --train-max 200000000 `
+  --predict-at 500000000
+```
+
 ## Next research steps
 
-1. **Preserve the 500M evidence:** retain the 500M Numba run log, independently validated 3,556-row catalog, manifest checksum, 200M subset check, and independent cross-validation through 100M. Preserve historical 200M run evidence separately.
+1. **Preserve the 500M evidence:** retain the 500M Numba run log, independently validated 3,556-row catalog, manifest checksum, 200M subset check, cross-validation through 100M, and the external OEIS exact-set comparison with reference checksum. Preserve historical 200M run evidence separately.
 2. **Audit bounded completeness:** extend implementation-level review of divisor generation, numerical bounds, and candidate enumeration; distinguish finite tests from formal proofs.
 3. **Evaluate a possible 1B extension:** assess SPF memory, signed-64-bit numerical safety, runtime, and independent bounded audits before running; validate any new rows independently, preserve the 500M catalog as a subset, and record provenance before updating the canonical catalog.
-4. **Investigate arithmetic structure:** analyze parity, prime-factor distributions, modular constraints, and exact space-diagonal square gaps; distinguish proofs from finite-data observations.
+4. **Investigate arithmetic structure and growth:** analyze parity, prime-factor distributions, modular constraints, exact space-diagonal square gaps, and rolling-origin predictive comparisons of empirical growth models; distinguish proofs from finite-data observations.
 
 ## Reproducibility and integrity
 
 - Verify primitive edges, all three face diagonals, and the space diagonal using exact `gcd` and `isqrt` checks.
 - Preserve search bounds, segment settings, source versions, and validation logs for systematic runs.
 - Maintain a canonical catalog with a checked manifest and SHA-256 digest; back up the catalog before updating it.
+- Record independent reference URLs, checksums, and exact-set comparison results; do not commit the downloaded OEIS table.
 - Keep random seeds, evaluation counts, algorithm parameters, and per-run results alongside heuristic candidate CSVs.
 - Distinguish **evaluations**, **unique candidates**, **per-run discoveries**, and **globally distinct discoveries**.
 - Avoid treating duplicate discoveries or repeated baseline results as independent evidence.

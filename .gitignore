@@ -34,3 +34,5 @@ candidates.csv
 # System files
 .DS_Store
 Thumbs.db
+# External reference data (download locally)
+/references/resta_a031173.txt
