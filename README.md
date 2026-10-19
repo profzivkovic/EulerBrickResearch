@@ -1,8 +1,8 @@
 # EulerBrickResearch
 
-Reproducible, exact-integer research into **Euler bricks** and the **perfect cuboid problem**, using Python's standard library.
+Reproducible, exact-integer research into **Euler bricks** and the **perfect cuboid problem**, using exact integer arithmetic in Python, with an optional NumPy/Numba-accelerated experimental engine.
 
-**Project status:** stable segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, independently cross-checked through **100,000,000** and extended with exact row validation through **200,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**. The verified catalog contains **2,509 primitive Euler bricks** through 200M (625 additional bricks beyond 100M).
+**Project status:** stable segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, independently cross-checked through **100,000,000** and extended with exact row validation through **200,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**; experimental fused Numba odd-leg engine **v0.10.4**, regression-tested through **200,000,000**. The verified catalog contains **2,509 primitive Euler bricks** through 200M (625 additional bricks beyond 100M).
 
 > **Scientific scope:** No perfect cuboid was found in the finite searches and experiments reported here. This is **not a proof of nonexistence**. Exact validation certifies the arithmetic properties of reported rows, but does not by itself establish that a search implementation has found every solution within its bound. Heuristic experiments make no completeness claim.
 
@@ -28,11 +28,13 @@ Final square tests use exact integer arithmetic (`math.isqrt`); floating-point f
 src/
   segmented_search.py        # stable systematic engine, v0.7.2
   odd_leg_search.py          # stable independent odd-leg engine, v0.9.9
+  odd_leg_numba_v0104.py     # experimental fused Numba odd-leg engine, v0.10.4
   pso_search.py              # diversity-preserving PSO, v0.8.1
   aco_search.py              # discrete ACO, v0.8.2
 tools/
   validate_bricks.py         # independent exact-arithmetic CSV validator
   update_verified_catalog.py # guarded catalog and manifest updater
+  audit_odd_leg.py           # bounded independent audit of stable v0.9.9
 data/
   verified_euler_bricks.csv  # verified systematic-search catalog
   verified_manifest.json    # bound, counts, checksum, and provenance
@@ -48,6 +50,7 @@ archive/
   v0.9.5/                   # earlier odd-leg release
   v0.9.8/                   # earlier odd-leg release
   v0.9.9/                   # current stable odd-leg release
+  v0.10.0/ ... v0.10.3/     # archived experimental Numba prototypes
 ```
 
 This tree lists the main research files; local workspaces, raw outputs, backups, and other utilities may also exist. The v0.8.0 PSO **results** are committed, but `src/pso_search.py` contains the later v0.8.1 implementation. Full source-level reproduction of v0.8.0 requires preserving its original script separately (for example, under `archive/v0.8.0/`). Do not treat v0.8.1 as the v0.8.0 source.
@@ -269,12 +272,55 @@ python src/odd_leg_search.py `
 
 Expected output includes `Primitive Euler bricks: 2509` and `Perfect cuboids: 0`. No reference comparison is requested for this command. The script writes canonical `(a,b,c)` triples to the specified CSV. Its CLI options are listed by `python src/odd_leg_search.py --help`. At 200M the SPF array alone requires approximately 800 MB; total process memory can be higher. Use 64-bit Python and adequate available RAM.
 
+## Experimental Numba odd-leg engine: v0.10.4
+
+The experimental `src/odd_leg_numba_v0104.py` fuses compatible-even-leg generation, modulo-3 partitioning, primitivity checks, and the remaining face-diagonal square test into Numba-compiled kernels. It imports the **unchanged** stable v0.9.9 source for SPF construction, candidate verification, and reference loading. It requires **NumPy** and **Numba** (tested with Python 3.11.1 64-bit and Numba 0.68.0); the stable v0.9.9 engine remains standard-library-only. The v0.10.0–v0.10.3 prototypes are preserved in `archive/`.
+
+The v0.10.4 source is the renamed, numerically hardened `v0.10.3-safe` variant. Its complete runs were executed under the `v0.10.3-safe` display label before the version-string-only rename. A post-rename smoke test at 1M found 242 bricks and reported `EXACT SET MATCH`; no algorithmic changes were made by the rename.
+
+| Maximum edge | Primitive bricks | Primitive candidate pairs | Perfect cuboids | v0.10.4 elapsed | Reference comparison |
+|---:|---:|---:|---:|---:|---|
+| 1,000,000 | 242 | 2,169,432 | 0 | 2.335 s (post-rename smoke test) | EXACT SET MATCH |
+| 10,000,000 | 704 | 33,697,155 | 0 | 14.288 s | EXACT SET MATCH |
+| 50,000,000 | 1,395 | 223,212,641 | 0 | 73.879 s | EXACT SET MATCH |
+| 100,000,000 | 1,884 | 501,018,824 | 0 | 158.897 s | EXACT SET MATCH |
+| 200,000,000 | **2,509** | **1,121,177,836** | **0** | **544.830 s** | **EXACT SET MATCH** |
+
+These are recorded individual run times, not a controlled benchmark of v0.10.4. The 1M smoke-test time includes initial Numba compilation; the larger runs were performed before the display-label rename. At 200M, the fused kernel processed 100,000,000 odd values, and the SPF sieve took 38.595 s. The comparison uses the existing verified catalog; since the accelerated engine shares the odd-leg construction with v0.9.9, this is **regression evidence, not an independent enumeration-completeness proof**.
+
+A controlled **three-cycle interleaved 10M benchmark** compared stable v0.9.9 with the earlier *original* v0.10.3 (not v0.10.4). The stable median was **55.066 s** and the original v0.10.3 median was **13.076 s**, a **4.21×** ratio. Do not attribute this controlled figure to v0.10.4. A separately recorded v0.10.4 run at 200M took 544.830 s versus an earlier v0.9.9 run of 2,015.158 s (3.70× ratio, **not** a controlled paired benchmark).
+
+### Reproduce the accelerated search
+
+From the repository root in PowerShell, after installing compatible NumPy and Numba versions:
+
+```powershell
+python src/odd_leg_numba_v0104.py `
+  --source src/odd_leg_search.py `
+  --max-edge 200000000 `
+  --reference data/verified_euler_bricks.csv `
+  --output odd_leg_numba_104_200m.csv
+```
+
+Expected result: 2,509 primitive bricks, zero perfect cuboids, and `EXACT SET MATCH`. The SPF array alone occupies approximately 800 MB at 200M; total process memory is higher. The program currently restricts `--max-edge` to at most 1,000,000,000 for signed-64-bit arithmetic, but running near that limit requires adequate RAM and additional large-bound operational testing.
+
+### Bounded audit of the stable odd-leg engine
+
+`tools/audit_odd_leg.py` checks v0.9.9 compatible legs against direct integer-square tests, tests sampled factorizations and divisors, and compares the complete small-bound result against an independent Pythagorean-pair graph enumerator. It also checks pair accounting and parity/modulo-3 constraints. For example:
+
+```powershell
+python tools/audit_odd_leg.py --source src/odd_leg_search.py --max-edge 1000 --samples 150
+python tools/audit_odd_leg.py --source src/odd_leg_search.py --max-edge 3000 --samples 150
+```
+
+These are finite bounded checks, **not** formal proofs. This audit directly targets v0.9.9, not the Numba kernel. The latter is checked against the reference catalog and by the stable engine's exact candidate verifier.
+
 ## Next research steps
 
-1. **Preserve the 200M result:** retain the odd-leg v0.9.9 log, independently validated 2,509-row catalog, manifest checksum, and previous 100M cross-validation evidence.
-2. **Audit bounded completeness:** review the odd-leg divisor enumeration, edge bounds, modulo-3 proof, primitivity checks, and candidate-pair enumeration independently of catalog matching.
-3. **Investigate arithmetic structure:** analyze parity, prime-factor distributions, modular constraints, and exact space-diagonal square gaps; distinguish proofs from finite-data observations.
-4. **Explore Numba CPU acceleration, then Colab GPU feasibility:** keep v0.9.9 unchanged, prototype in separate experimental files, check exact-set equality on smaller bounds, and benchmark end-to-end time with controlled repetitions.
+1. **Preserve the 200M evidence:** retain the stable and accelerated logs, independently validated 2,509-row catalog, manifest checksum, and independent cross-validation through 100M.
+2. **Audit bounded completeness:** extend implementation-level review of divisor generation, numerical bounds, and candidate enumeration; distinguish finite tests from formal proofs.
+3. **Plan 500M, then 1B:** assess SPF memory and runtime, validate new rows independently, preserve the previous catalog as a subset, and record provenance before updating the canonical catalog.
+4. **Investigate arithmetic structure:** analyze parity, prime-factor distributions, modular constraints, and exact space-diagonal square gaps; distinguish proofs from finite-data observations.
 
 ## Reproducibility and integrity
 

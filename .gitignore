@@ -17,10 +17,20 @@ results_*.csv
 # Generated experiment outputs
 bricks_*.csv
 search_results.csv
+odd_leg_*.csv
+benchmark_*.csv
 
-# System files
-.DS_Store
-Thumbs.dbcandidates.csv
+# Local backups and profiling
+backups/
+data/*_backup.csv
+data/*_backup.json
+profile_*.txt
+
+# Other generated CSV files
 graph_bricks.csv
 strong_candidates.csv
 candidates.csv
+
+# System files
+.DS_Store
+Thumbs.db
