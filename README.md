@@ -28,7 +28,7 @@ Final square tests use exact integer arithmetic (`math.isqrt`); floating-point f
 src/
   segmented_search.py        # stable systematic engine, v0.7.2
   odd_leg_search.py          # stable independent odd-leg engine, v0.9.9
-  odd_leg_numba_v0104.py     # experimental fused Numba odd-leg engine, v0.10.4
+  odd_leg_numba.py           # main accelerated Numba odd-leg engine, algorithm v0.10.4
   pso_search.py              # diversity-preserving PSO, v0.8.1
   aco_search.py              # discrete ACO, v0.8.2
 tools/
@@ -51,6 +51,7 @@ archive/
   v0.9.8/                   # earlier odd-leg release
   v0.9.9/                   # current stable odd-leg release
   v0.10.0/ ... v0.10.3/     # archived experimental Numba prototypes
+  v0.10.4/                   # preserved original odd_leg_numba_v0104.py
 ```
 
 This tree lists the main research files; local workspaces, raw outputs, backups, and other utilities may also exist. The v0.8.0 PSO **results** are committed, but `src/pso_search.py` contains the later v0.8.1 implementation. Full source-level reproduction of v0.8.0 requires preserving its original script separately (for example, under `archive/v0.8.0/`). Do not treat v0.8.1 as the v0.8.0 source.
@@ -274,9 +275,9 @@ Expected output includes `Primitive Euler bricks: 2509` and `Perfect cuboids: 0`
 
 ## Experimental Numba odd-leg engine: v0.10.4
 
-The experimental `src/odd_leg_numba_v0104.py` fuses compatible-even-leg generation, modulo-3 partitioning, primitivity checks, and the remaining face-diagonal square test into Numba-compiled kernels. It imports the **unchanged** stable v0.9.9 source for SPF construction, candidate verification, and reference loading. It requires **NumPy** and **Numba** (tested with Python 3.11.1 64-bit and Numba 0.68.0); the stable v0.9.9 engine remains standard-library-only. The v0.10.0–v0.10.3 prototypes are preserved in `archive/`.
+The promoted main accelerated engine `src/odd_leg_numba.py` (algorithm version v0.10.4) fuses compatible-even-leg generation, modulo-3 partitioning, primitivity checks, and the remaining face-diagonal square test into Numba-compiled kernels. It imports the **unchanged** stable v0.9.9 source for SPF construction, candidate verification, and reference loading. It requires **NumPy** and **Numba** (tested with Python 3.11.1 64-bit and Numba 0.68.0); the stable v0.9.9 engine remains standard-library-only. The v0.10.0–v0.10.3 prototypes are preserved in `archive/`.
 
-The v0.10.4 source is the renamed, numerically hardened `v0.10.3-safe` variant. Its complete runs were executed under the `v0.10.3-safe` display label before the version-string-only rename. A post-rename smoke test at 1M found 242 bricks and reported `EXACT SET MATCH`; no algorithmic changes were made by the rename.
+The v0.10.4 source is the renamed, numerically hardened `v0.10.3-safe` variant. After the completed 500M run, the identical source was promoted to `src/odd_leg_numba.py`; its versioned original was preserved in `archive/v0.10.4/odd_leg_numba_v0104.py`. This was a file-organization change only, with no changes to the search algorithm. A post-promotion 1M regression test passed. Its complete runs were executed under the `v0.10.3-safe` display label before the version-string-only rename. A post-rename smoke test at 1M found 242 bricks and reported `EXACT SET MATCH`; no algorithmic changes were made by the rename.
 
 | Maximum edge | Primitive bricks | Primitive candidate pairs | Perfect cuboids | v0.10.4 elapsed | Reference comparison |
 |---:|---:|---:|---:|---:|---|
@@ -315,7 +316,7 @@ The independent exact-arithmetic CSV validator reported `rows=3556; unique=3556;
 To reproduce the 500M search from the repository root in PowerShell (requires substantial available RAM):
 
 ```powershell
-python -u src/odd_leg_numba_v0104.py `
+python -u src/odd_leg_numba.py `
   --source src/odd_leg_search.py `
   --max-edge 500000000 `
   --output odd_leg_numba_104_500m.csv `
@@ -329,7 +330,7 @@ Do **not** pass the current 500M catalog as `--reference` when attempting to ext
 From the repository root in PowerShell, after installing compatible NumPy and Numba versions:
 
 ```powershell
-python src/odd_leg_numba_v0104.py `
+python src/odd_leg_numba.py `
   --source src/odd_leg_search.py `
   --max-edge 200000000 `
   --reference data/verified_euler_bricks.csv `
