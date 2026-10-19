@@ -2,7 +2,7 @@
 
 Reproducible, exact-integer research into **Euler bricks** and the **perfect cuboid problem**, using Python's standard library.
 
-**Project status:** stable segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, verified against the reference catalog through **100,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**. The verified catalog contains **1,884 primitive Euler bricks** through 100M.
+**Project status:** stable segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, independently cross-checked through **100,000,000** and extended with exact row validation through **200,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**. The verified catalog contains **2,509 primitive Euler bricks** through 200M (625 additional bricks beyond 100M).
 
 > **Scientific scope:** No perfect cuboid was found in the finite searches and experiments reported here. This is **not a proof of nonexistence**. Exact validation certifies the arithmetic properties of reported rows, but does not by itself establish that a search implementation has found every solution within its bound. Heuristic experiments make no completeness claim.
 
@@ -71,7 +71,7 @@ The 20M timing is approximate because its initial run encountered a missing refe
 
 The **100M** run reported 231.096 s for pair generation, 1,899.320 s for segment processing, and 2.174 s for consolidation. The independent CSV validator reported **1,884 rows, 1,884 unique primitive Euler bricks, zero perfect cuboids**, and confirmed that all **1,395** entries in the 50M catalog occur in the 100M result. These checks establish row-level arithmetic validity and preservation of the previous catalog; they are not an independent proof of enumeration completeness.
 
-The final verified **100M** catalog is maintained at `data/verified_euler_bricks.csv`, with metadata and a SHA-256 checksum in `data/verified_manifest.json`. Raw outputs such as `bricks_100m.csv` are separate from the canonical catalog.
+The current verified **200M** catalog is maintained at `data/verified_euler_bricks.csv`, with metadata and a SHA-256 checksum in `data/verified_manifest.json`. Raw outputs such as `bricks_100m.csv` are separate from the canonical catalog.
 
 ### Reproduce a bounded search
 
@@ -95,7 +95,7 @@ See `python src/segmented_search.py --help` for all options. The historical v0.7
 
 ### Independently validate and update the catalog
 
-First validate the new output and check that it contains every previously cataloged brick:
+Historical example: validate a 100M output against a prior 50M catalog:
 
 ```powershell
 python tools/validate_bricks.py `
@@ -105,9 +105,9 @@ python tools/validate_bricks.py `
   --subset-max-edge 50000000
 ```
 
-The subset bound above illustrates a **historical 50M-to-100M upgrade**. The current verified catalog is already at 100M; do not rerun this upgrade against the current catalog. For future updates, use the actual catalog bound recorded in `data/verified_manifest.json`. The validator checks sorted positive edges, bound, primitivity, all three integer face diagonals, uniqueness, and any supplied CSV metadata (including the space-diagonal tests and normalized gap).
+The subset bound above illustrates a **historical 50M-to-100M upgrade**. The current verified catalog is already at 200M; do not rerun this historical upgrade against the current catalog. For future updates, use the actual catalog bound recorded in `data/verified_manifest.json`. The validator checks sorted positive edges, bound, primitivity, all three integer face diagonals, uniqueness, and any supplied CSV metadata (including the space-diagonal tests and normalized gap).
 
-After `VALIDATION PASSED`, preserve a backup of the current catalog and manifest, then run:
+Historical example only (do not run against the current 200M catalog):
 
 ```powershell
 python tools/update_verified_catalog.py `
@@ -119,15 +119,15 @@ python tools/update_verified_catalog.py `
 
 The updater independently checks every incoming triple, validates the existing catalog against its manifest and SHA-256 checksum, rejects a decreasing bound, and requires the incoming set to include **all** previously cataloged bricks. It then writes a canonical, deduplicated catalog and updated manifest. It does **not** silently repair a missing old result by taking a union.
 
-Finally, validate the updated catalog:
+Validate the current 200M catalog:
 
 ```powershell
 python tools/validate_bricks.py `
   --input data/verified_euler_bricks.csv `
-  --max-edge 100000000
+  --max-edge 200000000
 ```
 
-For the 100M dataset, the expected successful result is `rows=1884; unique=1884; perfect=0` and `VALIDATION PASSED`. Only then review and commit the catalog and manifest. The updater's two-file replacement is not a single atomic transaction; if interrupted, its checksum check can detect an inconsistent catalog/manifest pair on a subsequent run.
+For the current 200M dataset, the expected successful result is `rows=2509; unique=2509; perfect=0` and `VALIDATION PASSED`. Only then review and commit the catalog and manifest. The updater's two-file replacement is not a single atomic transaction; if interrupted, its checksum check can detect an inconsistent catalog/manifest pair on a subsequent run.
 
 ## Experimental metaheuristics: v0.8.0–v0.8.2
 
@@ -234,7 +234,27 @@ The stable v0.9.9 implementation was subsequently run at 20M, 50M, and 100M with
 | Total elapsed | 122.196 s | 393.047 s | 1,119.861 s |
 | Reference comparison | EXACT SET MATCH | EXACT SET MATCH | EXACT SET MATCH |
 
-At 100M, odd-leg v0.9.9 took approximately **18 minutes 40 seconds**, versus **35 minutes 33 seconds** for segmented v0.7.2, an observed **47.49% reduction in elapsed time**. The reference catalog remains the existing systematic-search catalog; these runs provide an independent enumerator cross-check, not a new catalog or a formal implementation-level proof of completeness. No perfect cuboid was found within the tested bound.
+At 100M, odd-leg v0.9.9 took approximately **18 minutes 40 seconds**, versus **35 minutes 33 seconds** for segmented v0.7.2, an observed **47.49% reduction in elapsed time**. At the time of these 100M comparisons, the reference was the systematic-search catalog. These runs provide an independent enumerator cross-check, not a formal implementation-level proof of completeness. No perfect cuboid was found within the tested bound.
+
+### Extended odd-leg search through 200M
+
+The unchanged stable v0.9.9 engine was run at a maximum edge of **200,000,000** without a reference comparison. It reported **2,509 primitive Euler bricks**, **zero perfect cuboids**, and an elapsed time of **2,015.158 s** (33 min 35 s). This is **625 more bricks** than the 100M catalog.
+
+| v0.9.9 metric | 200M |
+|---|---:|
+| All possible pairs | 4,970,604,761 |
+| Pairs after modulo-3 partition | 2,555,512,427 |
+| Primitive candidate pairs / `isqrt` calls | 1,121,177,836 |
+| Rejected nonprimitive pairs | 1,434,334,591 |
+| Pair reduction | 48.59% |
+| SPF sieve time | 41.221 s |
+| Search time | 1,973.898 s |
+| Total elapsed | **2,015.158 s** |
+| Perfect cuboids | **0** |
+
+The independent exact-arithmetic CSV validator reported `rows=2509; unique=2509; perfect=0` and `VALIDATION PASSED`. A subset check against the previous 100M catalog reported `rows=1884; unique=1884; missing=0`. After catalog updating, validation of `data/verified_euler_bricks.csv` again reported `rows=2509; unique=2509; perfect=0` and `VALIDATION PASSED`.
+
+**Evidence boundary:** through 100M, two independently implemented enumerators produced identical sets. Between 100M and 200M, the result currently comes from the odd-leg enumerator, with independent validation of every reported triple and preservation of the prior catalog. Row validation does **not** independently prove enumeration completeness. No perfect cuboid was found within this finite search bound; this does not prove global nonexistence.
 
 ### Reproduce the odd-leg search
 
@@ -242,20 +262,19 @@ From the repository root in PowerShell:
 
 ```powershell
 python src/odd_leg_search.py `
-  --max-edge 100000000 `
-  --reference data/verified_euler_bricks.csv `
-  --output odd_leg_100m_v099.csv `
+  --max-edge 200000000 `
+  --output odd_leg_200m_v099.csv `
   --progress-every 10000000
 ```
 
-Expected output includes `Primitive Euler bricks: 1884`, `Perfect cuboids: 0`, `REFERENCE: expected=1884; missing=0; extra=0`, and `EXACT SET MATCH`. The script writes canonical `(a,b,c)` triples to the specified CSV. Its CLI options are listed by `python src/odd_leg_search.py --help`. At 100M the SPF array alone requires approximately 400 MB; total process memory can be higher. Use 64-bit Python and adequate available RAM.
+Expected output includes `Primitive Euler bricks: 2509` and `Perfect cuboids: 0`. No reference comparison is requested for this command. The script writes canonical `(a,b,c)` triples to the specified CSV. Its CLI options are listed by `python src/odd_leg_search.py --help`. At 200M the SPF array alone requires approximately 800 MB; total process memory can be higher. Use 64-bit Python and adequate available RAM.
 
 ## Next research steps
 
-1. **Preserve independent 100M validation:** retain the exact-match logs and timing measurements for odd-leg v0.9.9; consider larger bounds only with a defined resource and catalog-validation plan.
+1. **Preserve the 200M result:** retain the odd-leg v0.9.9 log, independently validated 2,509-row catalog, manifest checksum, and previous 100M cross-validation evidence.
 2. **Audit bounded completeness:** review the odd-leg divisor enumeration, edge bounds, modulo-3 proof, primitivity checks, and candidate-pair enumeration independently of catalog matching.
 3. **Investigate arithmetic structure:** analyze parity, prime-factor distributions, modular constraints, and exact space-diagonal square gaps; distinguish proofs from finite-data observations.
-4. **Benchmark carefully:** use interleaved repetitions and medians for future performance comparisons, retain the stable release, and promote experimental variants only after exact-set verification and repeatable gains.
+4. **Explore Numba CPU acceleration, then Colab GPU feasibility:** keep v0.9.9 unchanged, prototype in separate experimental files, check exact-set equality on smaller bounds, and benchmark end-to-end time with controlled repetitions.
 
 ## Reproducibility and integrity
 
