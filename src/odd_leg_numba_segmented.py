@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""EulerBrickResearch v0.15.1: experimental segmented odd-SPF Numba search.
-Preserves the v0.10.4 candidate-generation and pair-check mathematics.
+"""EulerBrickResearch v0.16.0: segmented SPF first-factor optimization.
+Experimental factorization-only change; preserves pair-check mathematics.
 Does not modify stable source or verified catalog.
 """
 import argparse
@@ -34,8 +34,16 @@ def compatible_even_legs_jit(odd, bound, spf, segment_lo, base_primes):
         exponents.append(1)
         n = 1
     else:
+        # The segment already supplies the smallest prime factor of odd.
+        # Extract it immediately, then skip all smaller primes in trial division.
+        exponent = 0
+        while n % first == 0:
+            n //= first
+            exponent += 1
+        primes.append(first)
+        exponents.append(exponent)
         for p in base_primes:
-            if p == 2:
+            if p <= first:
                 continue
             if p * p > n:
                 break
@@ -167,7 +175,7 @@ def main():
         parser.error('--progress-every must be nonnegative')
 
     stable = load_stable(args.source)
-    print('ODD-LEG segmented v0.15.1 / fused Numba kernel', flush=True)
+    print('ODD-LEG segmented v0.16.0 / first-factor optimization', flush=True)
     print(f'Bound={args.max_edge:,}; stable source={args.source}', flush=True)
     t0 = time.perf_counter()
     # Import the already-tested segmented SPF implementation from its
