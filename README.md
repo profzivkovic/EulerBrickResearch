@@ -2,7 +2,7 @@
 
 Reproducible, exact-integer research into **Euler bricks** and the **perfect cuboid problem**, using exact integer arithmetic in Python, with NumPy/Numba-accelerated global-SPF and segmented-SPF odd-leg engines.
 
-**Project status:** historical segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, independently cross-checked through **100,000,000** and extended with exact row validation through **200,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**; experimental fused Numba odd-leg engine **v0.10.4**, regression-tested through **200,000,000** and extended through **1,000,000,000** with independent exact-arithmetic row validation. Two active accelerated odd-leg variants are maintained: global-SPF `src/odd_leg_numba.py` (v0.10.4) and memory-oriented segmented-SPF `src/odd_leg_numba_segmented.py` (v0.15.1), the latter exact-set checked through 100M. The verified catalog contains **4,631 primitive Euler bricks** through 1B (1,075 additional bricks beyond 500M). An exact-set comparison with Giovanni Resta's published OEIS table independently corroborates **all 3,556 triples** for largest edge strictly below 500M; the 1B result additionally matches the published total count of 4,631, but a full independent triple-by-triple comparison through 1B has not been performed.
+**Project status:** historical segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, independently cross-checked through **100,000,000** and extended with exact row validation through **200,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**; experimental fused Numba odd-leg engine **v0.10.4**, regression-tested through **200,000,000** and extended through **1,000,000,000** with independent exact-arithmetic row validation. Two active accelerated odd-leg variants are maintained: global-SPF `src/odd_leg_numba.py` (v0.10.4) and memory-oriented segmented-SPF `src/odd_leg_numba_segmented.py` (v0.15.1), the latter exact-set checked through 500M. The verified catalog contains **4,631 primitive Euler bricks** through 1B (1,075 additional bricks beyond 500M). An exact-set comparison with Giovanni Resta's published OEIS table independently corroborates **all 3,556 triples** for largest edge strictly below 500M; the 1B result additionally matches the published total count of 4,631, but a full independent triple-by-triple comparison through 1B has not been performed.
 
 > **Scientific scope:** No perfect cuboid was found in the finite searches and experiments reported here. This is **not a proof of nonexistence**. Exact validation certifies the arithmetic properties of reported rows, but does not by itself establish that a search implementation has found every solution within its bound. Heuristic experiments make no completeness claim.
 
@@ -413,9 +413,9 @@ Two accelerated implementations remain **active in parallel**. `src/odd_leg_numb
 - **v0.14.0:** profiled the existing Numba search at 10M, including 33,697,155 exact integer-square-root tests; the profiler is archived.
 - **v0.14.1:** tested modular square-residue filters. Despite fewer `isqrt` calls, the measured 10M search was slower; this experiment was not promoted and is archived.
 - **v0.15.0:** independently tested segmented SPF factorization against the original factorization (exhaustive odd values through 1M, plus samples across 100M). The original prototype is archived.
-- **v0.15.1:** integrated segmented SPF with a fused Numba search kernel. Full **EXACT SET MATCH** against the verified catalog at 10M (704 bricks) and 100M (1,884 bricks), with zero missing and zero extra rows. Both bounds reported zero perfect cuboids.
+- **v0.15.1:** integrated segmented SPF with a fused Numba search kernel. Full **EXACT SET MATCH** against the verified catalog at 10M (704 bricks), 100M (1,884 bricks), and 500M (3,556 bricks), with zero missing and zero extra rows. All three bounds reported zero perfect cuboids.
 - **v0.15.2:** compared segment sizes of 25,000, 100,000, and 400,000 odd values at 10M (two runs each). Search-time medians were 14.1095 s, 14.265 s, and 14.2275 s respectively, with exact-set agreement in all runs. No meaningful speed advantage was established; the default remains 100,000 odd values.
-- **v0.15.3:** measured memory with a process-tree sampler on Windows, using the same 100,000-odd segment size. The memory tool remains active under `tools/measure_memory.py`.
+- **v0.15.3:** measured memory with a process-tree sampler on Windows, using the same 100,000-odd segment size. The memory tool remains active under `tools/measure_memory.py`. Completed global-SPF versus segmented-SPF measurements now cover 10M, 100M, and 500M.
 
 ### Recorded segmented-SPF results
 
@@ -423,8 +423,9 @@ Two accelerated implementations remain **active in parallel**. `src/odd_leg_numb
 |---:|---:|---|---:|---:|---:|---:|
 | 10M | 704 | EXACT SET MATCH | 14.294 s | — | 50 | 0 |
 | 100M | 1,884 | EXACT SET MATCH | 250.145 s | 14.983 s | 500 | 0 |
+| 500M | **3,556** | **EXACT SET MATCH** | **1,787.602 s** | 90.309 s | 2,500 | **0** |
 
-At 100M the fused kernel took 220.712 s and the full program reported 250.313 s including compilation. The segment SPF allocation was at most 400,000 bytes (excluding overhead) with `--segment-odds 100000`. This figure describes the SPF segment buffer **only**, not total process memory. The 100M result is a regression comparison against the existing verified catalog, not a new independent proof of enumeration completeness.
+At 100M the fused kernel took 220.712 s and the full program reported 250.313 s including compilation. The segment SPF allocation was at most 400,000 bytes (excluding overhead) with `--segment-odds 100000`. This figure describes the SPF segment buffer **only**, not total process memory. The 100M and 500M results are regression comparisons against the existing verified catalog, not new independent proofs of enumeration completeness. At 500M, the segmented fused kernel took 1,578.106 s over 249,999,999 calls; total program elapsed was 1,787.793 s. Both engines reported exactly 3,237,540,952 primitive candidate pairs and 4,346,788,291 rejected nonprimitive pairs. The global 500M run did not itself request `--reference`; its result count and pair counters matched the segmented run, whose exact-set comparison succeeded.
 
 ### Memory measurements (Windows, v0.15.3)
 
@@ -434,12 +435,16 @@ At 100M the fused kernel took 220.712 s and the full program reported 250.313 s 
 | Segmented SPF, 10M | 98.14 MiB | 98.23 MiB | 14.294 s | 14.462 s |
 | Global SPF, 100M | **730.46 MiB** | 801.08 MiB | **136.639 s** | 156.174 s |
 | Segmented SPF, 100M | **98.04 MiB** | 98.52 MiB | 250.145 s | 250.313 s |
+| Global SPF, 500M | **3,768.12 MiB** | 3,847.56 MiB | 956.624 s | 1,060.678 s |
+| Segmented SPF, 500M | **99.27 MiB** | 99.27 MiB | 1,787.602 s | 1,787.793 s |
 
 At 10M, the segmented run used approximately **27.1% less sampled peak RSS** than the global-SPF run (36.52 MiB less). At 100M, it used **632.42 MiB less sampled peak RSS**, a reduction of approximately **86.6%**; the global-SPF peak sampled RSS was approximately **7.45 times** the segmented-SPF value. The tradeoff was slower execution: segmented search time was 250.145 s versus 136.639 s for global SPF (approximately 83.1% longer). Both 100M runs reported **1,884 primitive Euler bricks**, **zero perfect cuboids**, and `EXACT SET MATCH` against the existing verified catalog, with no missing or extra rows.
 
+At 500M, the segmented run used **3,668.85 MiB less sampled peak RSS**, a **97.37% reduction**; the global peak was approximately **37.96 times** the segmented peak. Segmented search time was approximately **86.9% longer** (1,787.602 s versus 956.624 s, a **1.87×** ratio). The global run reported 103.714 s for its SPF sieve and 878.916 s for its fused kernel; the segmented run reported 90.309 s for segment construction and 1,578.106 s for its fused kernel. These breakdowns identify kernel work as the main *observed timing difference*, but do not isolate its underlying cause. Global memory-wrapper wall time was 1,061.756 s (17,933 samples); segmented wall time was 1,788.437 s (28,186 samples), both at a nominal 50 ms sampling interval. Both exited with code 0.
+
 The global-SPF 100M run reported SPF sieve time 19.372 s, Numba compilation 0.147 s, fused kernel time 127.599 s, 501,018,824 primitive candidate pairs, and 616,535,617 rejected nonprimitive pairs. Its sampler reported 2,753 samples at 50 ms intervals, process-tree peak sampled RSS 730.46 MiB, and an observed process-tree Windows peak working set of 801.08 MiB; the memory-wrapper wall time was 156.744 s (versus the program's 156.174 s total elapsed). The segmented-SPF 100M run reported 500 segments and at most 400,000 bytes allocated for the SPF segment buffer alone (excluding overhead).
 
-These are individual runs, **not controlled repeated timing trials**. The nearly unchanged segmented sampled RSS between 10M and 100M supports the intended bounded-segment memory advantage over the tested range; it **does not prove constant total-memory complexity**. The 50 ms sampler may miss short-lived peaks, and the sum of Windows per-process peak working sets need not represent simultaneous memory use. The observed Windows peak working-set figures should therefore not be interpreted as synchronized process-tree maxima. Exact-set agreement is regression evidence, not a proof of enumeration completeness.
+These are individual runs, **not controlled repeated timing trials**. The nearly unchanged segmented sampled RSS between 10M and 500M supports the intended bounded-segment memory advantage over the tested range; it **does not prove constant total-memory complexity**. The 50 ms sampler may miss short-lived peaks, and the sum of Windows per-process peak working sets need not represent simultaneous memory use. The observed Windows peak working-set figures should therefore not be interpreted as synchronized process-tree maxima. Exact-set agreement is regression evidence, not a proof of enumeration completeness.
 
 Reproduce a 100M segmented search from the repository root using the project virtual environment:
 
@@ -474,6 +479,28 @@ To reproduce the global-SPF 100M memory measurement with the same wrapper:
   --reference data/verified_euler_bricks.csv `
   --output odd_leg_original_0153_100m.csv
 ```
+
+Reproduce the 500M comparison with process-tree memory sampling (run sequentially, not concurrently):
+
+```powershell
+.\.venv\Scripts\python.exe -u tools/measure_memory.py -- `
+  .\.venv\Scripts\python.exe -u src/odd_leg_numba.py `
+  --source src/odd_leg_search.py `
+  --max-edge 500000000 `
+  --output odd_leg_global_500m.csv `
+  --progress-every 10000000
+
+.\.venv\Scripts\python.exe -u tools/measure_memory.py -- `
+  .\.venv\Scripts\python.exe -u src/odd_leg_numba_segmented.py `
+  --source src/odd_leg_search.py `
+  --max-edge 500000000 `
+  --segment-odds 100000 `
+  --reference data/verified_euler_bricks.csv `
+  --output odd_leg_segmented_500m.csv `
+  --progress-every 10000000
+```
+
+The global run requires several GiB of RAM. The reference option on the segmented run compares against the 500M subset of the current 1B catalog. The two generated output files are separate local artifacts, not replacements for the canonical catalog.
 
 Use `tools/benchmark_segments.py` for segment-size comparisons. Generated benchmark CSVs and run outputs are local artifacts, separate from the canonical verified catalog. Neither a finite exact-set match nor the absence of perfect cuboids resolves the perfect cuboid problem.
 
@@ -671,8 +698,9 @@ Both CSV reports are generated outputs and can remain local rather than being co
 1. **Preserve the 1B evidence:** retain the validated 4,631-row catalog, manifest checksum, and independent 500M OEIS exact-set comparison.
 2. **Audit bounded completeness:** review divisor generation, candidate enumeration, numerical bounds, and implementation-level assumptions. Distinguish bounded checks from formal proofs.
 3. **Strengthen independent corroboration at 1B:** seek a published full triple list for exact-set comparison; currently only the published count is matched at 1B.
-4. **Extend and benchmark the two active Numba variants:** compare speed and sampled memory under controlled, repeated conditions at larger bounds when resources permit, without assuming constant total memory use.
-5. **Maintain research separation:** keep metaheuristic results in `experiments/metaheuristics/`, completed algorithm prototypes in `archive/`, and current code in `src/` and `tools/` without version suffixes. The v0.11–v0.13 distribution, growth-model, and space-diagonal analyses are completed historical studies.
+4. **Optimize segmented factorization (planned v0.16.0):** profile the segmented Numba kernel and test use of the segment SPF first factor to reduce repeated trial division. Preserve v0.15.1 until a separate prototype passes exact-set regression checks and repeated speed/memory benchmarks.
+5. **Extend bounds only after numerical-safety review:** both current accelerated engines enforce a 1B maximum; audit integer arithmetic and bounds before any 2B experiment. Do not assume constant total memory use.
+6. **Maintain research separation:** keep metaheuristic results in `experiments/metaheuristics/`, completed algorithm prototypes in `archive/`, and current code in `src/` and `tools/` without version suffixes. The v0.11–v0.13 distribution, growth-model, and space-diagonal analyses are completed historical studies.
 
 ## Reproducibility and integrity
 
