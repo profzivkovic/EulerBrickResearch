@@ -432,9 +432,14 @@ At 100M the fused kernel took 220.712 s and the full program reported 250.313 s 
 |---|---:|---:|---:|---:|
 | Global SPF, 10M | 134.66 MiB | 137.97 MiB | 11.930 s | 13.837 s |
 | Segmented SPF, 10M | 98.14 MiB | 98.23 MiB | 14.294 s | 14.462 s |
+| Global SPF, 100M | **730.46 MiB** | 801.08 MiB | **136.639 s** | 156.174 s |
 | Segmented SPF, 100M | **98.04 MiB** | 98.52 MiB | 250.145 s | 250.313 s |
 
-The 10M segmented run used approximately **27.1% less sampled peak RSS** than the global-SPF run (36.52 MiB less), while its reported search phase was slower. These are individual runs, not controlled repeated timing trials. The 100M segmented measurement found nearly unchanged sampled RSS compared with 10M, despite a tenfold increase in bound. This supports the intended memory advantage of bounded SPF segments over the tested range; it **does not prove constant total-memory complexity**. The sampler uses 50 ms intervals, may miss short-lived peaks, and sums process-tree memory; the sum of Windows per-process peak working sets need not be simultaneous. No global-SPF 100M memory result is claimed here.
+At 10M, the segmented run used approximately **27.1% less sampled peak RSS** than the global-SPF run (36.52 MiB less). At 100M, it used **632.42 MiB less sampled peak RSS**, a reduction of approximately **86.6%**; the global-SPF peak sampled RSS was approximately **7.45 times** the segmented-SPF value. The tradeoff was slower execution: segmented search time was 250.145 s versus 136.639 s for global SPF (approximately 83.1% longer). Both 100M runs reported **1,884 primitive Euler bricks**, **zero perfect cuboids**, and `EXACT SET MATCH` against the existing verified catalog, with no missing or extra rows.
+
+The global-SPF 100M run reported SPF sieve time 19.372 s, Numba compilation 0.147 s, fused kernel time 127.599 s, 501,018,824 primitive candidate pairs, and 616,535,617 rejected nonprimitive pairs. Its sampler reported 2,753 samples at 50 ms intervals, process-tree peak sampled RSS 730.46 MiB, and an observed process-tree Windows peak working set of 801.08 MiB; the memory-wrapper wall time was 156.744 s (versus the program's 156.174 s total elapsed). The segmented-SPF 100M run reported 500 segments and at most 400,000 bytes allocated for the SPF segment buffer alone (excluding overhead).
+
+These are individual runs, **not controlled repeated timing trials**. The nearly unchanged segmented sampled RSS between 10M and 100M supports the intended bounded-segment memory advantage over the tested range; it **does not prove constant total-memory complexity**. The 50 ms sampler may miss short-lived peaks, and the sum of Windows per-process peak working sets need not represent simultaneous memory use. The observed Windows peak working-set figures should therefore not be interpreted as synchronized process-tree maxima. Exact-set agreement is regression evidence, not a proof of enumeration completeness.
 
 Reproduce a 100M segmented search from the repository root using the project virtual environment:
 
@@ -457,6 +462,17 @@ The reference comparison filters the verified catalog to the requested bound. Fo
   --segment-odds 100000 `
   --reference data/verified_euler_bricks.csv `
   --output odd_leg_segmented_100m.csv
+```
+
+To reproduce the global-SPF 100M memory measurement with the same wrapper:
+
+```powershell
+.\.venv\Scripts\python.exe -u tools/measure_memory.py -- `
+  .\.venv\Scripts\python.exe -u src/odd_leg_numba.py `
+  --source src/odd_leg_search.py `
+  --max-edge 100000000 `
+  --reference data/verified_euler_bricks.csv `
+  --output odd_leg_original_0153_100m.csv
 ```
 
 Use `tools/benchmark_segments.py` for segment-size comparisons. Generated benchmark CSVs and run outputs are local artifacts, separate from the canonical verified catalog. Neither a finite exact-set match nor the absence of perfect cuboids resolves the perfect cuboid problem.
