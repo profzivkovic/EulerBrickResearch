@@ -41,6 +41,11 @@ Thumbs.db
 /growth_model_comparison.csv
 /growth_robustness_0121.csv
 
+# v0.14 profiling and modular-filter benchmark outputs
+odd_leg_profile_0140_*.csv
+odd_leg_0141_*.csv
+odd_leg_0142_*.csv
+
 # Generated space-diagonal analysis reports
 /space_diagonal_analysis_0130.csv
 /space_diagonal_stability_0131.csv
