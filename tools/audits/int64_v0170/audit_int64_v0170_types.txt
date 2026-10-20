@@ -1,0 +1,1694 @@
+===== integer_sqrt64 =====
+integer_sqrt64 (int64,)
+--------------------------------------------------------------------------------
+# File: C:\Users\Miodrag\PycharmProjects\EulerBrickResearch\src\odd_leg_numba_segmented.py
+# --- LINE 90 ---
+# label 0
+#   n = arg(0, name=n)  :: int64
+
+@njit(cache=True)
+
+# --- LINE 91 ---
+
+def integer_sqrt64(n):
+
+    # --- LINE 92 ---
+
+    """Exact floor sqrt of nonnegative int64 using overflow-safe divisions."""
+
+    # --- LINE 93 ---
+    #   $const6.1.1 = const(int, 0)  :: Literal[int](0)
+    #   $8compare_op.2 = n <= $const6.1.1  :: bool
+    #   del $const6.1.1
+    #   $bool14 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+    #   $14pred = call $bool14($8compare_op.2, func=$bool14, args=(Var($8compare_op.2, odd_leg_numba_segmented.py:93),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+    #   del $bool14
+    #   del $8compare_op.2
+    #   branch $14pred, 16, 20
+
+    if n <= 0:
+
+        # --- LINE 94 ---
+        # label 16
+        #   del n
+        #   del $14pred
+        #   $const16.0.1 = const(int, 0)  :: Literal[int](0)
+        #   $18return_value.1 = cast(value=$const16.0.1)  :: int64
+        #   del $const16.0.1
+        #   return $18return_value.1
+
+        return 0
+
+    # --- LINE 95 ---
+    # label 20
+    #   del $14pred
+    #   $20load_global.0 = global(int: <class 'int'>)  :: Function(<class 'int'>)
+    #   $32load_global.2 = global(math: <module 'math' (built-in)>)  :: Module(<module 'math' (built-in)>)
+    #   $44load_attr.4 = getattr(value=$32load_global.2, attr=sqrt)  :: Function(<built-in function sqrt>)
+    #   del $32load_global.2
+    #   $60call.6 = call $44load_attr.4(n, func=$44load_attr.4, args=[Var(n, odd_leg_numba_segmented.py:90)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> float64
+    #   del $44load_attr.4
+    #   r = call $20load_global.0($60call.6, func=$20load_global.0, args=[Var($60call.6, odd_leg_numba_segmented.py:95)], kws=(), vararg=None, varkwarg=None, target=None)  :: (float64,) -> int64
+    #   del $60call.6
+    #   del $20load_global.0
+    #   r.4 = r  :: int64
+
+    r = int(math.sqrt(n))
+
+    # --- LINE 96 ---
+    #   $const88.9.2 = const(int, 1)  :: Literal[int](1)
+    #   $90compare_op.10 = r < $const88.9.2  :: bool
+    #   del r
+    #   del $const88.9.2
+    #   $bool96 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+    #   $96pred = call $bool96($90compare_op.10, func=$bool96, args=(Var($90compare_op.10, odd_leg_numba_segmented.py:96),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+    #   del $bool96
+    #   del $90compare_op.10
+    #   branch $96pred, 98, 102
+
+    if r < 1:
+
+        # --- LINE 97 ---
+        # label 98
+        #   del $96pred
+        #   r.1 = const(int, 1)  :: Literal[int](1)
+        #   r.4 = r.1  :: int64
+        #   del r.1
+
+        r = 1
+
+    # --- LINE 98 ---
+    #   jump 102
+    # label 102
+    #   del $96pred
+    #   r.6 = r.4  :: int64
+    #   r.5 = r.4  :: int64
+    #   $const104.1.2 = const(int, 1)  :: Literal[int](1)
+    #   $binop_add106.2 = r.4 + $const104.1.2  :: int64
+    #   del $const104.1.2
+    #   $const114.5.2 = const(int, 1)  :: Literal[int](1)
+    #   $binop_add116.6 = r.4 + $const114.5.2  :: int64
+    #   del r.4
+    #   del $const114.5.2
+    #   $binop_floordiv120.7 = n // $binop_add116.6  :: int64
+    #   del $binop_add116.6
+    #   $124compare_op.8 = $binop_add106.2 <= $binop_floordiv120.7  :: bool
+    #   del $binop_floordiv120.7
+    #   del $binop_add106.2
+    #   $bool130 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+    #   $130pred = call $bool130($124compare_op.8, func=$bool130, args=(Var($124compare_op.8, odd_leg_numba_segmented.py:98),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+    #   del $bool130
+    #   del $124compare_op.8
+    #   branch $130pred, 132, 172
+    #   $const144.4.2 = const(int, 1)  :: Literal[int](1)
+    #   $binop_add146.5 = r.2 + $const144.4.2  :: int64
+    #   del $const144.4.2
+    #   $const154.8.2 = const(int, 1)  :: Literal[int](1)
+    #   $binop_add156.9 = r.2 + $const154.8.2  :: int64
+    #   del r.2
+    #   del $const154.8.2
+    #   $binop_floordiv160.10 = n // $binop_add156.9  :: int64
+    #   del $binop_add156.9
+    #   $164compare_op.11 = $binop_add146.5 <= $binop_floordiv160.10  :: bool
+    #   del $binop_floordiv160.10
+    #   del $binop_add146.5
+    #   $bool170 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+    #   $170pred = call $bool170($164compare_op.11, func=$bool170, args=(Var($164compare_op.11, odd_leg_numba_segmented.py:98),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+    #   del $bool170
+    #   del $164compare_op.11
+    #   branch $170pred, 132, 172
+
+    while r + 1 <= n // (r + 1):
+
+        # --- LINE 99 ---
+        # label 132
+        #   del $130pred
+        #   $const134.1.2 = const(int, 1)  :: Literal[int](1)
+        #   $binop_iadd136.2 = inplace_binop(fn=<built-in function iadd>, immutable_fn=<built-in function add>, lhs=r.5, rhs=$const134.1.2, static_lhs=Undefined, static_rhs=Undefined)  :: int64
+        #   del $const134.1.2
+        #   r.2 = $binop_iadd136.2  :: int64
+        #   del $binop_iadd136.2
+        #   r.6 = r.2  :: int64
+        #   r.5 = r.2  :: int64
+
+        r += 1
+
+    # --- LINE 100 ---
+    # label 172
+    #   del r.5
+    #   del $170pred
+    #   del $130pred
+    #   r.8 = r.6  :: int64
+    #   r.7 = r.6  :: int64
+    #   $binop_floordiv178.3 = n // r.6  :: int64
+    #   $182compare_op.4 = r.6 > $binop_floordiv178.3  :: bool
+    #   del r.6
+    #   del $binop_floordiv178.3
+    #   $bool188 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+    #   $188pred = call $bool188($182compare_op.4, func=$bool188, args=(Var($182compare_op.4, odd_leg_numba_segmented.py:100),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+    #   del $bool188
+    #   del $182compare_op.4
+    #   branch $188pred, 190, 218
+    #   $binop_floordiv206.6 = n // r.3  :: int64
+    #   $210compare_op.7 = r.3 > $binop_floordiv206.6  :: bool
+    #   del r.3
+    #   del $binop_floordiv206.6
+    #   $bool216 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+    #   $216pred = call $bool216($210compare_op.7, func=$bool216, args=(Var($210compare_op.7, odd_leg_numba_segmented.py:100),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+    #   del $bool216
+    #   del $210compare_op.7
+    #   branch $216pred, 190, 218
+
+    while r > n // r:
+
+        # --- LINE 101 ---
+        # label 190
+        #   del $188pred
+        #   $const192.1.2 = const(int, 1)  :: Literal[int](1)
+        #   $binop_isub194.2 = inplace_binop(fn=<built-in function isub>, immutable_fn=<built-in function sub>, lhs=r.7, rhs=$const192.1.2, static_lhs=Undefined, static_rhs=Undefined)  :: int64
+        #   del $const192.1.2
+        #   r.3 = $binop_isub194.2  :: int64
+        #   del $binop_isub194.2
+        #   r.8 = r.3  :: int64
+        #   r.7 = r.3  :: int64
+
+        r -= 1
+
+    # --- LINE 102 ---
+    # label 218
+    #   del r.7
+    #   del n
+    #   del $216pred
+    #   del $188pred
+    #   $220return_value.1 = cast(value=r.8)  :: int64
+    #   del r.8
+    #   return $220return_value.1
+
+    return r
+
+
+================================================================================
+
+
+===== compatible_even_legs_jit =====
+compatible_even_legs_jit (int64, int64, Array(uint32, 1, 'C', False, aligned=True), int64, Array(int64, 1, 'C', False, aligned=True))
+--------------------------------------------------------------------------------
+# File: C:\Users\Miodrag\PycharmProjects\EulerBrickResearch\src\odd_leg_numba_segmented.py
+# --- LINE 20 ---
+# label 0
+#   odd = arg(0, name=odd)  :: int64
+#   bound = arg(1, name=bound)  :: int64
+#   spf = arg(2, name=spf)  :: array(uint32, 1d, C)
+#   segment_lo = arg(3, name=segment_lo)  :: int64
+#   base_primes = arg(4, name=base_primes)  :: array(int64, 1d, C)
+
+@njit(cache=True)
+
+# --- LINE 21 ---
+
+def compatible_even_legs_jit(odd, bound, spf, segment_lo, base_primes):
+
+    # --- LINE 22 ---
+
+    """Generate every e<=bound from divisors d<odd of odd**2 (Numba int64)."""
+
+    # --- LINE 23 ---
+    #   $const6.1.1 = const(int, 1)  :: Literal[int](1)
+    #   $8compare_op.2 = odd <= $const6.1.1  :: bool
+    #   del $const6.1.1
+    #   $bool14 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+    #   $14pred = call $bool14($8compare_op.2, func=$bool14, args=(Var($8compare_op.2, odd_leg_numba_segmented.py:23),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+    #   del $bool14
+    #   del $8compare_op.2
+    #   branch $14pred, 16, 80
+
+    if odd <= 1:
+
+        # --- LINE 24 ---
+        # label 16
+        #   del spf
+        #   del segment_lo
+        #   del odd
+        #   del bound
+        #   del base_primes
+        #   del $14pred
+        #   $16load_global.0 = global(np: <module 'numpy' from 'C:\\Users\\Miodrag\\PycharmProjects\\EulerBrickResearch\\.venv\\Lib\\site-packages\\numpy\\__init__.py'>)  :: Module(<module 'numpy' from 'C:\\Users\\Miodrag\\PycharmProjects\\EulerBrickResearch\\.venv\\Lib\\site-packages\\numpy\\__init__.py'>)
+        #   $28load_attr.2 = getattr(value=$16load_global.0, attr=empty)  :: Function(<built-in function empty>)
+        #   del $16load_global.0
+        #   $const38.3.2 = const(int, 0)  :: Literal[int](0)
+        #   $40load_global.4 = global(np: <module 'numpy' from 'C:\\Users\\Miodrag\\PycharmProjects\\EulerBrickResearch\\.venv\\Lib\\site-packages\\numpy\\__init__.py'>)  :: Module(<module 'numpy' from 'C:\\Users\\Miodrag\\PycharmProjects\\EulerBrickResearch\\.venv\\Lib\\site-packages\\numpy\\__init__.py'>)
+        #   $52load_attr.5 = getattr(value=$40load_global.4, attr=int64)  :: class(int64)
+        #   del $40load_global.4
+        #   $68call.6 = call $28load_attr.2($const38.3.2, func=$28load_attr.2, args=[Var($const38.3.2, odd_leg_numba_segmented.py:24)], kws=[('dtype', Var($52load_attr.5, odd_leg_numba_segmented.py:24))], vararg=None, varkwarg=None, target=None)  :: (int64, class(int64)) -> array(int64, 1d, C)
+        #   del $const38.3.2
+        #   del $52load_attr.5
+        #   del $28load_attr.2
+        #   $78return_value.7 = cast(value=$68call.6)  :: array(int64, 1d, C)
+        #   del $68call.6
+        #   return $78return_value.7
+
+        return np.empty(0, dtype=np.int64)
+
+    # --- LINE 25 ---
+    # label 80
+    #   del $14pred
+    #   n = odd  :: int64
+    #   del $156pred
+    #   n.9 = n  :: int64
+    #   n.4 = n  :: int64
+
+    n = odd
+
+    # --- LINE 26 ---
+    #   primes = build_list(items=[])  :: list(int64)<iv=None>
+
+    primes = []
+
+    # --- LINE 27 ---
+    #   exponents = build_list(items=[])  :: list(int64)<iv=None>
+
+    exponents = []
+
+    # --- LINE 28 ---
+
+    # Segment SPF supplies the first factor; remaining factors are obtained
+
+    # --- LINE 29 ---
+
+    # from the small prime table. Unlike a global SPF, segment SPF cannot
+
+    # --- LINE 30 ---
+
+    # index the shrinking remainder, which may lie outside this segment.
+
+    # --- LINE 31 ---
+    #   $92load_global.3 = global(int: <class 'int'>)  :: Function(<class 'int'>)
+    #   $binop_sub110.8 = odd - segment_lo  :: int64
+    #   del segment_lo
+    #   $const114.9.4 = const(int, 2)  :: Literal[int](2)
+    #   $binop_floordiv116.10 = $binop_sub110.8 // $const114.9.4  :: int64
+    #   del $const114.9.4
+    #   del $binop_sub110.8
+    #   $120binary_subscr.11 = getitem(value=spf, index=$binop_floordiv116.10, fn=<built-in function getitem>)  :: uint32
+    #   del spf
+    #   del $binop_floordiv116.10
+    #   first = call $92load_global.3($120binary_subscr.11, func=$92load_global.3, args=[Var($120binary_subscr.11, odd_leg_numba_segmented.py:31)], kws=(), vararg=None, varkwarg=None, target=None)  :: (uint32,) -> uint32
+    #   del $92load_global.3
+    #   del $120binary_subscr.11
+
+    first = int(spf[(odd - segment_lo) // 2])
+
+    # --- LINE 32 ---
+    #   $const148.14.2 = const(int, 0)  :: Literal[int](0)
+    #   $150compare_op.15 = first == $const148.14.2  :: bool
+    #   del $const148.14.2
+    #   $bool156 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+    #   $156pred = call $bool156($150compare_op.15, func=$bool156, args=(Var($150compare_op.15, odd_leg_numba_segmented.py:32),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+    #   del $bool156
+    #   del $150compare_op.15
+    #   branch $156pred, 158, 248
+
+    if first == 0:
+
+        # --- LINE 33 ---
+        # label 158
+        #   del n
+        #   del first
+        #   del base_primes
+        #   del $156pred
+        #   $160load_method.2 = getattr(value=primes, attr=append)  :: BoundFunction(list.append for list(int64)<iv=None>)
+        #   $188call.4 = call $160load_method.2(odd, func=$160load_method.2, args=[Var(odd, odd_leg_numba_segmented.py:20)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> none
+        #   del $188call.4
+        #   del $160load_method.2
+
+        primes.append(odd)
+
+        # --- LINE 34 ---
+        #   $202load_method.7 = getattr(value=exponents, attr=append)  :: BoundFunction(list.append for list(int64)<iv=None>)
+        #   $const224.8.1 = const(int, 1)  :: Literal[int](1)
+        #   $230call.9 = call $202load_method.7($const224.8.1, func=$202load_method.7, args=[Var($const224.8.1, odd_leg_numba_segmented.py:34)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> none
+        #   del $const224.8.1
+        #   del $230call.9
+        #   del $202load_method.7
+
+        exponents.append(1)
+
+        # --- LINE 35 ---
+        #   n.1 = const(int, 1)  :: Literal[int](1)
+        #   del n.1
+        #   jump 722
+
+        n = 1
+
+    # --- LINE 36 ---
+
+    else:
+
+        # --- LINE 37 ---
+
+        # The segment already supplies the smallest prime factor of odd.
+
+        # --- LINE 38 ---
+
+        # Extract it immediately, then skip all smaller primes in trial division.
+
+        # --- LINE 39 ---
+        # label 248
+        #   exponent = const(int, 0)  :: Literal[int](0)
+        #   exponent.6 = exponent  :: int64
+        #   exponent.5 = exponent  :: int64
+        #   del exponent
+
+        exponent = 0
+
+        # --- LINE 40 ---
+        #   $binop_mod256.3 = n % first  :: int64
+        #   del n
+        #   $const260.4.2 = const(int, 0)  :: Literal[int](0)
+        #   $262compare_op.5 = $binop_mod256.3 == $const260.4.2  :: bool
+        #   del $const260.4.2
+        #   del $binop_mod256.3
+        #   $bool268 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+        #   $268pred = call $bool268($262compare_op.5, func=$bool268, args=(Var($262compare_op.5, odd_leg_numba_segmented.py:40),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+        #   del $bool268
+        #   del $262compare_op.5
+        #   branch $268pred, 270, 308
+        #   $binop_mod294.8 = n.2 % first  :: int64
+        #   del n.2
+        #   $const298.9.2 = const(int, 0)  :: Literal[int](0)
+        #   $300compare_op.10 = $binop_mod294.8 == $const298.9.2  :: bool
+        #   del $const298.9.2
+        #   del $binop_mod294.8
+        #   $bool306 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+        #   $306pred = call $bool306($300compare_op.10, func=$bool306, args=(Var($300compare_op.10, odd_leg_numba_segmented.py:40),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+        #   del $bool306
+        #   del $300compare_op.10
+        #   branch $306pred, 270, 308
+
+        while n % first == 0:
+
+            # --- LINE 41 ---
+            # label 270
+            #   del $268pred
+            #   $binop_ifloordiv274.2 = inplace_binop(fn=<built-in function ifloordiv>, immutable_fn=<built-in function floordiv>, lhs=n.4, rhs=first, static_lhs=Undefined, static_rhs=Undefined)  :: int64
+            #   n.2 = $binop_ifloordiv274.2  :: int64
+            #   del $binop_ifloordiv274.2
+            #   n.9 = n.2  :: int64
+            #   n.4 = n.2  :: int64
+
+            n //= first
+
+            # --- LINE 42 ---
+            #   $const282.4.1 = const(int, 1)  :: Literal[int](1)
+            #   $binop_iadd284.5 = inplace_binop(fn=<built-in function iadd>, immutable_fn=<built-in function add>, lhs=exponent.5, rhs=$const282.4.1, static_lhs=Undefined, static_rhs=Undefined)  :: int64
+            #   del $const282.4.1
+            #   exponent.1 = $binop_iadd284.5  :: int64
+            #   del $binop_iadd284.5
+            #   exponent.6 = exponent.1  :: int64
+            #   exponent.5 = exponent.1  :: int64
+            #   del exponent.1
+
+            exponent += 1
+
+        # --- LINE 43 ---
+        # label 308
+        #   $310load_method.2 = getattr(value=primes, attr=append)  :: BoundFunction(list.append for list(int64)<iv=None>)
+        #   $338call.4 = call $310load_method.2(first, func=$310load_method.2, args=[Var(first, odd_leg_numba_segmented.py:31)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> none
+        #   del $338call.4
+        #   del $310load_method.2
+
+        primes.append(first)
+
+        # --- LINE 44 ---
+        #   $352load_method.7 = getattr(value=exponents, attr=append)  :: BoundFunction(list.append for list(int64)<iv=None>)
+        #   $380call.9 = call $352load_method.7(exponent.6, func=$352load_method.7, args=[Var(exponent.6, odd_leg_numba_segmented.py:43)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> none
+        #   del exponent.6
+        #   del $380call.9
+        #   del $352load_method.7
+
+        exponents.append(exponent)
+
+        # --- LINE 45 ---
+        #   $394get_iter.11 = getiter(value=base_primes)  :: iter(array(int64, 1d, C))
+        #   del base_primes
+        #   $phi396.0 = $394get_iter.11  :: iter(array(int64, 1d, C))
+        #   del $394get_iter.11
+        #   jump 396
+        # label 396
+        #   $396for_iter.1 = iternext(value=$phi396.0)  :: pair<int64, bool>
+        #   $396for_iter.2 = pair_first(value=$396for_iter.1)  :: int64
+        #   $396for_iter.3 = pair_second(value=$396for_iter.1)  :: bool
+        #   del $396for_iter.1
+        #   $phi398.1 = $396for_iter.2  :: int64
+        #   del $396for_iter.2
+        #   branch $396for_iter.3, 398, 626
+        # label 398
+        #   del $396for_iter.3
+        #   p = $phi398.1  :: int64
+        #   del $phi398.1
+        # label 1275
+        #   jump 396
+
+        for p in base_primes:
+
+            # --- LINE 46 ---
+            #   $404compare_op.4 = p <= first  :: bool
+            #   $bool410 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+            #   $410pred = call $bool410($404compare_op.4, func=$bool410, args=(Var($404compare_op.4, odd_leg_numba_segmented.py:46),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+            #   del $bool410
+            #   del $404compare_op.4
+            #   branch $410pred, 412, 414
+
+            if p <= first:
+
+                # --- LINE 47 ---
+                # label 412
+                #   jump 1275
+
+                continue
+
+            # --- LINE 48 ---
+            #   del n.4
+            #   del exponent.5
+            #   del $306pred
+            #   del $268pred
+            #   n.5 = n.9  :: int64
+            #   del n.9
+            #   del p
+            #   del $410pred
+            #   n.6 = n.5  :: int64
+            #   del n.5
+            # label 414
+            #   del $410pred
+            #   $binop_mul418.3 = p * p  :: int64
+            #   $424compare_op.5 = $binop_mul418.3 > n.5  :: bool
+            #   del $binop_mul418.3
+            #   $bool430 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+            #   $430pred = call $bool430($424compare_op.5, func=$bool430, args=(Var($424compare_op.5, odd_leg_numba_segmented.py:48),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+            #   del $bool430
+            #   del $424compare_op.5
+            #   branch $430pred, 432, 436
+            #   del $430pred
+            #   n.7 = n.5  :: int64
+            #   del n.7
+            #   del $452pred
+            #   n.8 = n.5  :: int64
+            #   n.10 = n.5  :: int64
+            #   del n.10
+            #   del exponent.7
+            #   del $512pred
+            #   del $474pred
+            #   n.7 = n.8  :: int64
+            #   del n.8
+            #   del p
+            #   del n.5
+            #   del $452pred
+            #   n.6 = n.7  :: int64
+            #   del n.7
+            #   n.5 = n.6  :: int64
+            #   del n.6
+
+            if p * p > n:
+
+                # --- LINE 49 ---
+                # label 432
+                #   del p
+                #   del first
+                #   del $phi396.0
+                #   del $430pred
+                #   jump 626
+
+                break
+
+            # --- LINE 50 ---
+            # label 436
+            #   $binop_mod440.3 = n.5 % p  :: int64
+            #   $const444.4.2 = const(int, 0)  :: Literal[int](0)
+            #   $446compare_op.5 = $binop_mod440.3 == $const444.4.2  :: bool
+            #   del $const444.4.2
+            #   del $binop_mod440.3
+            #   $bool452 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+            #   $452pred = call $bool452($446compare_op.5, func=$bool452, args=(Var($446compare_op.5, odd_leg_numba_segmented.py:50),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+            #   del $bool452
+            #   del $446compare_op.5
+            #   branch $452pred, 454, 624
+
+            if n % p == 0:
+
+                # --- LINE 51 ---
+                # label 454
+                #   exponent.2 = const(int, 0)  :: Literal[int](0)
+                #   exponent.8 = exponent.2  :: int64
+                #   exponent.7 = exponent.2  :: int64
+                #   del exponent.2
+
+                exponent = 0
+
+                # --- LINE 52 ---
+                #   $binop_mod462.4 = n.5 % p  :: int64
+                #   del n.5
+                #   $const466.5.2 = const(int, 0)  :: Literal[int](0)
+                #   $468compare_op.6 = $binop_mod462.4 == $const466.5.2  :: bool
+                #   del $const466.5.2
+                #   del $binop_mod462.4
+                #   $bool474 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+                #   $474pred = call $bool474($468compare_op.6, func=$bool474, args=(Var($468compare_op.6, odd_leg_numba_segmented.py:52),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+                #   del $bool474
+                #   del $468compare_op.6
+                #   branch $474pred, 476, 514
+                #   $binop_mod500.9 = n.3 % p  :: int64
+                #   del n.3
+                #   $const504.10.2 = const(int, 0)  :: Literal[int](0)
+                #   $506compare_op.11 = $binop_mod500.9 == $const504.10.2  :: bool
+                #   del $const504.10.2
+                #   del $binop_mod500.9
+                #   $bool512 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+                #   $512pred = call $bool512($506compare_op.11, func=$bool512, args=(Var($506compare_op.11, odd_leg_numba_segmented.py:52),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+                #   del $bool512
+                #   del $506compare_op.11
+                #   branch $512pred, 476, 514
+
+                while n % p == 0:
+
+                    # --- LINE 53 ---
+                    # label 476
+                    #   del $474pred
+                    #   $binop_ifloordiv480.3 = inplace_binop(fn=<built-in function ifloordiv>, immutable_fn=<built-in function floordiv>, lhs=n.10, rhs=p, static_lhs=Undefined, static_rhs=Undefined)  :: int64
+                    #   n.3 = $binop_ifloordiv480.3  :: int64
+                    #   del $binop_ifloordiv480.3
+                    #   n.8 = n.3  :: int64
+                    #   n.10 = n.3  :: int64
+
+                    n //= p
+
+                    # --- LINE 54 ---
+                    #   $const488.5.1 = const(int, 1)  :: Literal[int](1)
+                    #   $binop_iadd490.6 = inplace_binop(fn=<built-in function iadd>, immutable_fn=<built-in function add>, lhs=exponent.7, rhs=$const488.5.1, static_lhs=Undefined, static_rhs=Undefined)  :: int64
+                    #   del $const488.5.1
+                    #   exponent.3 = $binop_iadd490.6  :: int64
+                    #   del $binop_iadd490.6
+                    #   exponent.8 = exponent.3  :: int64
+                    #   exponent.7 = exponent.3  :: int64
+                    #   del exponent.3
+
+                    exponent += 1
+
+                # --- LINE 55 ---
+                # label 514
+                #   $516load_method.3 = getattr(value=primes, attr=append)  :: BoundFunction(list.append for list(int64)<iv=None>)
+                #   $538load_global.4 = global(int: <class 'int'>)  :: Function(<class 'int'>)
+                #   $556call.7 = call $538load_global.4(p, func=$538load_global.4, args=[Var(p, odd_leg_numba_segmented.py:45)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> int64
+                #   del p
+                #   del $538load_global.4
+                #   $570call.8 = call $516load_method.3($556call.7, func=$516load_method.3, args=[Var($556call.7, odd_leg_numba_segmented.py:55)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> none
+                #   del $570call.8
+                #   del $556call.7
+                #   del $516load_method.3
+
+                primes.append(int(p))
+
+                # --- LINE 56 ---
+                #   $584load_method.11 = getattr(value=exponents, attr=append)  :: BoundFunction(list.append for list(int64)<iv=None>)
+                #   $612call.13 = call $584load_method.11(exponent.8, func=$584load_method.11, args=[Var(exponent.8, odd_leg_numba_segmented.py:55)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> none
+                #   del exponent.8
+                #   del $612call.13
+                #   del $584load_method.11
+                #   jump 624
+                # label 624
+                #   jump 1275
+
+                exponents.append(exponent)
+
+        # --- LINE 57 ---
+        # label 626
+        #   del first
+        #   del $phi398.1
+        #   del $phi396.0
+        #   del $396for_iter.3
+        #   $const628.1.1 = const(int, 1)  :: Literal[int](1)
+        #   $630compare_op.2 = n.5 > $const628.1.1  :: bool
+        #   del $const628.1.1
+        #   $bool636 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+        #   $636pred = call $bool636($630compare_op.2, func=$bool636, args=(Var($630compare_op.2, odd_leg_numba_segmented.py:57),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+        #   del $bool636
+        #   del $630compare_op.2
+        #   branch $636pred, 638, 722
+
+        if n > 1:
+
+            # --- LINE 58 ---
+            # label 638
+            #   del $636pred
+            #   $640load_method.2 = getattr(value=primes, attr=append)  :: BoundFunction(list.append for list(int64)<iv=None>)
+            #   $668call.4 = call $640load_method.2(n.5, func=$640load_method.2, args=[Var(n.5, odd_leg_numba_segmented.py:48)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> none
+            #   del n.5
+            #   del $668call.4
+            #   del $640load_method.2
+
+            primes.append(n)
+
+            # --- LINE 59 ---
+            #   $682load_method.7 = getattr(value=exponents, attr=append)  :: BoundFunction(list.append for list(int64)<iv=None>)
+            #   $const704.8.1 = const(int, 1)  :: Literal[int](1)
+            #   $710call.9 = call $682load_method.7($const704.8.1, func=$682load_method.7, args=[Var($const704.8.1, odd_leg_numba_segmented.py:59)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> none
+            #   del $const704.8.1
+            #   del $710call.9
+            #   del $682load_method.7
+
+            exponents.append(1)
+
+    # --- LINE 60 ---
+    #   jump 722
+    # label 722
+    #   del n.5
+    #   del $636pred
+    #   $const722.0.1 = const(int, 1)  :: Literal[int](1)
+    #   divisors = build_list(items=[Var($const722.0.1, odd_leg_numba_segmented.py:60)])  :: list(int64)<iv=[1]>
+    #   del $const722.0.1
+    #   divisors.2 = divisors  :: list(int64)<iv=None>
+    #   del divisors
+
+    divisors = [1]
+
+    # --- LINE 61 ---
+    #   odd_squared = odd * odd  :: int64
+
+    odd_squared = odd * odd
+
+    # --- LINE 62 ---
+    #   $738load_global.5 = global(range: <class 'range'>)  :: Function(<class 'range'>)
+    #   $750load_global.7 = global(len: <built-in function len>)  :: Function(<built-in function len>)
+    #   $768call.10 = call $750load_global.7(primes, func=$750load_global.7, args=[Var(primes, odd_leg_numba_segmented.py:26)], kws=(), vararg=None, varkwarg=None, target=None)  :: (List(int64, False),) -> int64
+    #   del $750load_global.7
+    #   $782call.11 = call $738load_global.5($768call.10, func=$738load_global.5, args=[Var($768call.10, odd_leg_numba_segmented.py:62)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> range_state_int64
+    #   del $768call.10
+    #   del $738load_global.5
+    #   $792get_iter.12 = getiter(value=$782call.11)  :: range_iter_int64
+    #   del $782call.11
+    #   $phi794.0 = $792get_iter.12  :: range_iter_int64
+    #   del $792get_iter.12
+    #   jump 794
+    # label 794
+    #   $794for_iter.1 = iternext(value=$phi794.0)  :: pair<int64, bool>
+    #   $794for_iter.2 = pair_first(value=$794for_iter.1)  :: int64
+    #   $794for_iter.3 = pair_second(value=$794for_iter.1)  :: bool
+    #   del $794for_iter.1
+    #   $phi796.1 = $794for_iter.2  :: int64
+    #   del $794for_iter.2
+    #   branch $794for_iter.3, 796, 1274
+    # label 796
+    #   del $794for_iter.3
+    #   index = $phi796.1  :: int64
+    #   del $phi796.1
+
+    for index in range(len(primes)):
+
+        # --- LINE 63 ---
+        #   prime = getitem(value=primes, index=index, fn=<built-in function getitem>)  :: int64
+
+        prime = primes[index]
+
+        # --- LINE 64 ---
+        #   exponent.4 = getitem(value=exponents, index=index, fn=<built-in function getitem>)  :: int64
+
+        exponent = exponents[index]
+
+        # --- LINE 65 ---
+        #   $832load_global.9 = global(len: <built-in function len>)  :: Function(<built-in function len>)
+        #   $850call.12 = call $832load_global.9(primes, func=$832load_global.9, args=[Var(primes, odd_leg_numba_segmented.py:26)], kws=(), vararg=None, varkwarg=None, target=None)  :: (List(int64, False),) -> int64
+        #   del $832load_global.9
+        #   $const860.13.1 = const(int, 1)  :: Literal[int](1)
+        #   $binop_sub862.14 = $850call.12 - $const860.13.1  :: int64
+        #   del $const860.13.1
+        #   del $850call.12
+        #   last = index == $binop_sub862.14  :: bool
+        #   del index
+        #   del $binop_sub862.14
+
+        last = index == len(primes) - 1
+
+        # --- LINE 66 ---
+        #   $bool876 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+        #   $876pred = call $bool876(last, func=$bool876, args=(Var(last, odd_leg_numba_segmented.py:65),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+        #   del last
+        #   del $bool876
+        #   branch $876pred, 878, 1134
+
+        if last:
+
+            # --- LINE 67 ---
+            # label 878
+            #   del primes
+            #   del exponents
+            #   del $phi794.0
+            #   del $876pred
+            #   legs = build_list(items=[])  :: list(int64)<iv=None>
+
+            legs = []
+
+            # --- LINE 68 ---
+            #   $884get_iter.3 = getiter(value=divisors.2)  :: iter(list(int64)<iv=None>)
+            #   del divisors.2
+            #   $phi886.1 = $884get_iter.3  :: iter(list(int64)<iv=None>)
+            #   del $884get_iter.3
+            #   jump 886
+            # label 886
+            #   $886for_iter.2 = iternext(value=$phi886.1)  :: pair<int64, bool>
+            #   $886for_iter.3 = pair_first(value=$886for_iter.2)  :: int64
+            #   $886for_iter.4 = pair_second(value=$886for_iter.2)  :: bool
+            #   del $886for_iter.2
+            #   $phi888.2 = $886for_iter.3  :: int64
+            #   del $886for_iter.3
+            #   branch $886for_iter.4, 888, 1066
+            # label 888
+            #   del $886for_iter.4
+            #   d = $phi888.2  :: int64
+            #   del $phi888.2
+
+            for d in divisors:
+
+                # --- LINE 69 ---
+                #   value = d  :: int64
+                #   del d
+                #   value.4 = value  :: int64
+                #   del value
+
+                value = d
+
+                # --- LINE 70 ---
+                #   $894load_global.4 = global(range: <class 'range'>)  :: Function(<class 'range'>)
+                #   $const906.6.4 = const(int, 2)  :: Literal[int](2)
+                #   $binop_mul910.8 = $const906.6.4 * exponent.4  :: int64
+                #   del $const906.6.4
+                #   $const914.9.1 = const(int, 1)  :: Literal[int](1)
+                #   $binop_add916.10 = $binop_mul910.8 + $const914.9.1  :: int64
+                #   del $const914.9.1
+                #   del $binop_mul910.8
+                #   $924call.11 = call $894load_global.4($binop_add916.10, func=$894load_global.4, args=[Var($binop_add916.10, odd_leg_numba_segmented.py:70)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> range_state_int64
+                #   del $binop_add916.10
+                #   del $894load_global.4
+                #   $934get_iter.12 = getiter(value=$924call.11)  :: range_iter_int64
+                #   del $924call.11
+                #   $phi936.2 = $934get_iter.12  :: range_iter_int64
+                #   del $934get_iter.12
+                #   jump 936
+                # label 936
+                #   $936for_iter.3 = iternext(value=$phi936.2)  :: pair<int64, bool>
+                #   $936for_iter.4 = pair_first(value=$936for_iter.3)  :: int64
+                #   $936for_iter.5 = pair_second(value=$936for_iter.3)  :: bool
+                #   del $936for_iter.3
+                #   $phi938.3 = $936for_iter.4  :: int64
+                #   del $936for_iter.4
+                #   branch $936for_iter.5, 938, 1064
+                # label 938
+                #   del $936for_iter.5
+                #   _ = $phi938.3  :: int64
+                #   del _
+                #   del $phi938.3
+
+                for _ in range(2 * exponent + 1):
+
+                    # --- LINE 71 ---
+                    #   $944compare_op.6 = value.4 >= odd  :: bool
+                    #   $bool950 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+                    #   $950pred = call $bool950($944compare_op.6, func=$bool950, args=(Var($944compare_op.6, odd_leg_numba_segmented.py:71),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+                    #   del $bool950
+                    #   del $944compare_op.6
+                    #   branch $950pred, 952, 956
+
+                    if value >= odd:
+
+                        # --- LINE 72 ---
+                        # label 952
+                        #   del value.4
+                        #   del $phi936.2
+                        #   del $950pred
+                        #   jump 1064
+
+                        break
+
+                    # --- LINE 73 ---
+                    # label 956
+                    #   del $950pred
+                    #   $binop_floordiv960.5 = odd_squared // value.4  :: int64
+                    #   $binop_sub966.7 = $binop_floordiv960.5 - value.4  :: int64
+                    #   del $binop_floordiv960.5
+                    #   $const970.8.4 = const(int, 2)  :: Literal[int](2)
+                    #   e = $binop_sub966.7 // $const970.8.4  :: int64
+                    #   del $const970.8.4
+                    #   del $binop_sub966.7
+
+                    e = (odd_squared // value - value) // 2
+
+                    # --- LINE 74 ---
+                    #   $const978.10.2 = const(int, 0)  :: Literal[int](0)
+                    #   $986compare_op.12 = $const978.10.2 < e  :: bool
+                    #   del $const978.10.2
+                    #   $bool992 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+                    #   $992pred = call $bool992($986compare_op.12, func=$bool992, args=(Var($986compare_op.12, odd_leg_numba_segmented.py:74),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+                    #   del $bool992
+                    #   del $986compare_op.12
+                    #   $phi994.3 = e  :: int64
+                    #   branch $992pred, 994, 1006
+                    # label 994
+                    #   del $992pred
+                    #   $996compare_op.5 = $phi994.3 <= bound  :: bool
+                    #   del $phi994.3
+                    #   $bool1002 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+                    #   $1002pred = call $bool1002($996compare_op.5, func=$bool1002, args=(Var($996compare_op.5, odd_leg_numba_segmented.py:74),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+                    #   del $bool1002
+                    #   del $996compare_op.5
+                    #   branch $1002pred, 1004, 1052
+                    # label 1004
+                    #   del $1002pred
+                    #   jump 1010
+                    # label 1006
+                    #   del e
+                    #   del $phi994.3
+                    #   del $992pred
+                    #   jump 1052
+
+                    if 0 < e <= bound:
+
+                        # --- LINE 75 ---
+                        # label 1010
+                        #   $1012load_method.5 = getattr(value=legs, attr=append)  :: BoundFunction(list.append for list(int64)<iv=None>)
+                        #   $1040call.7 = call $1012load_method.5(e, func=$1012load_method.5, args=[Var(e, odd_leg_numba_segmented.py:73)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> none
+                        #   del e
+                        #   del $1040call.7
+                        #   del $1012load_method.5
+
+                        legs.append(e)
+
+                    # --- LINE 76 ---
+                    #   jump 1052
+                    # label 1052
+                    #   del e
+                    #   del $1002pred
+                    #   $binop_imul1056.5 = inplace_binop(fn=<built-in function imul>, immutable_fn=<built-in function mul>, lhs=value.4, rhs=prime, static_lhs=Undefined, static_rhs=Undefined)  :: int64
+                    #   value.1 = $binop_imul1056.5  :: int64
+                    #   del $binop_imul1056.5
+                    #   value.4 = value.1  :: int64
+                    #   del value.1
+                    #   jump 936
+                    # label 1064
+                    #   del value.4
+                    #   del $phi938.3
+                    #   del $phi936.2
+                    #   del $936for_iter.5
+                    #   jump 886
+
+                    value *= prime
+
+            # --- LINE 77 ---
+            # label 1066
+            #   del prime
+            #   del odd_squared
+            #   del odd
+            #   del exponent.4
+            #   del bound
+            #   del $phi888.2
+            #   del $phi886.1
+            #   del $886for_iter.4
+            #   $1066load_global.1 = global(np: <module 'numpy' from 'C:\\Users\\Miodrag\\PycharmProjects\\EulerBrickResearch\\.venv\\Lib\\site-packages\\numpy\\__init__.py'>)  :: Module(<module 'numpy' from 'C:\\Users\\Miodrag\\PycharmProjects\\EulerBrickResearch\\.venv\\Lib\\site-packages\\numpy\\__init__.py'>)
+            #   $1078load_attr.3 = getattr(value=$1066load_global.1, attr=asarray)  :: Function(<built-in function asarray>)
+            #   del $1066load_global.1
+            #   $1090load_global.5 = global(np: <module 'numpy' from 'C:\\Users\\Miodrag\\PycharmProjects\\EulerBrickResearch\\.venv\\Lib\\site-packages\\numpy\\__init__.py'>)  :: Module(<module 'numpy' from 'C:\\Users\\Miodrag\\PycharmProjects\\EulerBrickResearch\\.venv\\Lib\\site-packages\\numpy\\__init__.py'>)
+            #   $1102load_attr.6 = getattr(value=$1090load_global.5, attr=int64)  :: class(int64)
+            #   del $1090load_global.5
+            #   $1118call.7 = call $1078load_attr.3(legs, func=$1078load_attr.3, args=[Var(legs, odd_leg_numba_segmented.py:67)], kws=[('dtype', Var($1102load_attr.6, odd_leg_numba_segmented.py:77))], vararg=None, varkwarg=None, target=None)  :: (List(int64, False), class(int64)) -> array(int64, 1d, C)
+            #   del legs
+            #   del $1102load_attr.6
+            #   del $1078load_attr.3
+            #   $1132return_value.8 = cast(value=$1118call.7)  :: array(int64, 1d, C)
+            #   del $1118call.7
+            #   return $1132return_value.8
+
+            return np.asarray(legs, dtype=np.int64)
+
+        # --- LINE 78 ---
+        # label 1134
+        #   del $876pred
+        #   next_divisors = build_list(items=[])  :: list(int64)<iv=None>
+
+        next_divisors = []
+
+        # --- LINE 79 ---
+        #   $1140get_iter.3 = getiter(value=divisors.2)  :: iter(list(int64)<iv=None>)
+        #   del divisors.2
+        #   $phi1142.1 = $1140get_iter.3  :: iter(list(int64)<iv=None>)
+        #   del $1140get_iter.3
+        #   jump 1142
+        # label 1142
+        #   $1142for_iter.2 = iternext(value=$phi1142.1)  :: pair<int64, bool>
+        #   $1142for_iter.3 = pair_first(value=$1142for_iter.2)  :: int64
+        #   $1142for_iter.4 = pair_second(value=$1142for_iter.2)  :: bool
+        #   del $1142for_iter.2
+        #   $phi1144.2 = $1142for_iter.3  :: int64
+        #   del $1142for_iter.3
+        #   branch $1142for_iter.4, 1144, 1268
+        # label 1144
+        #   del $1142for_iter.4
+        #   d.1 = $phi1144.2  :: int64
+        #   del $phi1144.2
+
+        for d in divisors:
+
+            # --- LINE 80 ---
+            #   value.2 = d.1  :: int64
+            #   del d.1
+            #   value.5 = value.2  :: int64
+            #   del value.2
+
+            value = d
+
+            # --- LINE 81 ---
+            #   $1150load_global.4 = global(range: <class 'range'>)  :: Function(<class 'range'>)
+            #   $const1162.6.4 = const(int, 2)  :: Literal[int](2)
+            #   $binop_mul1166.8 = $const1162.6.4 * exponent.4  :: int64
+            #   del $const1162.6.4
+            #   $const1170.9.1 = const(int, 1)  :: Literal[int](1)
+            #   $binop_add1172.10 = $binop_mul1166.8 + $const1170.9.1  :: int64
+            #   del $const1170.9.1
+            #   del $binop_mul1166.8
+            #   $1180call.11 = call $1150load_global.4($binop_add1172.10, func=$1150load_global.4, args=[Var($binop_add1172.10, odd_leg_numba_segmented.py:81)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> range_state_int64
+            #   del $binop_add1172.10
+            #   del $1150load_global.4
+            #   $1190get_iter.12 = getiter(value=$1180call.11)  :: range_iter_int64
+            #   del $1180call.11
+            #   $phi1192.2 = $1190get_iter.12  :: range_iter_int64
+            #   del $1190get_iter.12
+            #   jump 1192
+            # label 1192
+            #   $1192for_iter.3 = iternext(value=$phi1192.2)  :: pair<int64, bool>
+            #   $1192for_iter.4 = pair_first(value=$1192for_iter.3)  :: int64
+            #   $1192for_iter.5 = pair_second(value=$1192for_iter.3)  :: bool
+            #   del $1192for_iter.3
+            #   $phi1194.3 = $1192for_iter.4  :: int64
+            #   del $1192for_iter.4
+            #   branch $1192for_iter.5, 1194, 1266
+            # label 1194
+            #   del $1192for_iter.5
+            #   _.1 = $phi1194.3  :: int64
+            #   del _.1
+            #   del $phi1194.3
+
+            for _ in range(2 * exponent + 1):
+
+                # --- LINE 82 ---
+                #   $1200compare_op.6 = value.5 >= odd  :: bool
+                #   $bool1206 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+                #   $1206pred = call $bool1206($1200compare_op.6, func=$bool1206, args=(Var($1200compare_op.6, odd_leg_numba_segmented.py:82),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+                #   del $bool1206
+                #   del $1200compare_op.6
+                #   branch $1206pred, 1208, 1212
+
+                if value >= odd:
+
+                    # --- LINE 83 ---
+                    # label 1208
+                    #   del value.5
+                    #   del $phi1192.2
+                    #   del $1206pred
+                    #   jump 1266
+
+                    break
+
+                # --- LINE 84 ---
+                # label 1212
+                #   del $1206pred
+                #   $1214load_method.5 = getattr(value=next_divisors, attr=append)  :: BoundFunction(list.append for list(int64)<iv=None>)
+                #   $1242call.7 = call $1214load_method.5(value.5, func=$1214load_method.5, args=[Var(value.5, odd_leg_numba_segmented.py:81)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> none
+                #   del $1242call.7
+                #   del $1214load_method.5
+
+                next_divisors.append(value)
+
+                # --- LINE 85 ---
+                #   $binop_imul1258.10 = inplace_binop(fn=<built-in function imul>, immutable_fn=<built-in function mul>, lhs=value.5, rhs=prime, static_lhs=Undefined, static_rhs=Undefined)  :: int64
+                #   value.3 = $binop_imul1258.10  :: int64
+                #   del $binop_imul1258.10
+                #   value.5 = value.3  :: int64
+                #   del value.3
+                #   jump 1192
+                # label 1266
+                #   del value.5
+                #   del $phi1194.3
+                #   del $phi1192.2
+                #   del $1192for_iter.5
+                #   jump 1142
+
+                value *= prime
+
+        # --- LINE 86 ---
+        # label 1268
+        #   del prime
+        #   del exponent.4
+        #   del $phi1144.2
+        #   del $phi1142.1
+        #   del $1142for_iter.4
+        #   divisors.1 = next_divisors  :: list(int64)<iv=None>
+        #   del next_divisors
+        #   divisors.2 = divisors.1  :: list(int64)<iv=None>
+        #   del divisors.1
+        #   jump 794
+
+        divisors = next_divisors
+
+    # --- LINE 87 ---
+    # label 1274
+    #   del primes
+    #   del odd_squared
+    #   del odd
+    #   del exponents
+    #   del divisors.2
+    #   del bound
+    #   del $phi796.1
+    #   del $phi794.0
+    #   del $794for_iter.3
+    #   $1274load_global.0 = global(np: <module 'numpy' from 'C:\\Users\\Miodrag\\PycharmProjects\\EulerBrickResearch\\.venv\\Lib\\site-packages\\numpy\\__init__.py'>)  :: Module(<module 'numpy' from 'C:\\Users\\Miodrag\\PycharmProjects\\EulerBrickResearch\\.venv\\Lib\\site-packages\\numpy\\__init__.py'>)
+    #   $1286load_attr.2 = getattr(value=$1274load_global.0, attr=empty)  :: Function(<built-in function empty>)
+    #   del $1274load_global.0
+    #   $const1296.3.2 = const(int, 0)  :: Literal[int](0)
+    #   $1298load_global.4 = global(np: <module 'numpy' from 'C:\\Users\\Miodrag\\PycharmProjects\\EulerBrickResearch\\.venv\\Lib\\site-packages\\numpy\\__init__.py'>)  :: Module(<module 'numpy' from 'C:\\Users\\Miodrag\\PycharmProjects\\EulerBrickResearch\\.venv\\Lib\\site-packages\\numpy\\__init__.py'>)
+    #   $1310load_attr.5 = getattr(value=$1298load_global.4, attr=int64)  :: class(int64)
+    #   del $1298load_global.4
+    #   $1326call.6 = call $1286load_attr.2($const1296.3.2, func=$1286load_attr.2, args=[Var($const1296.3.2, odd_leg_numba_segmented.py:87)], kws=[('dtype', Var($1310load_attr.5, odd_leg_numba_segmented.py:87))], vararg=None, varkwarg=None, target=None)  :: (int64, class(int64)) -> array(int64, 1d, C)
+    #   del $const1296.3.2
+    #   del $1310load_attr.5
+    #   del $1286load_attr.2
+    #   $1336return_value.7 = cast(value=$1326call.6)  :: array(int64, 1d, C)
+    #   del $1326call.6
+    #   return $1336return_value.7
+
+    return np.empty(0, dtype=np.int64)
+
+
+================================================================================
+
+
+===== fused_odd_kernel =====
+fused_odd_kernel (int64, int64, Array(uint32, 1, 'C', False, aligned=True), int64, Array(int64, 1, 'C', False, aligned=True))
+--------------------------------------------------------------------------------
+# File: C:\Users\Miodrag\PycharmProjects\EulerBrickResearch\src\odd_leg_numba_segmented.py
+# --- LINE 105 ---
+# label 0
+#   odd = arg(0, name=odd)  :: int64
+#   bound = arg(1, name=bound)  :: int64
+#   spf = arg(2, name=spf)  :: array(uint32, 1d, C)
+#   segment_lo = arg(3, name=segment_lo)  :: int64
+#   base_primes = arg(4, name=base_primes)  :: array(int64, 1d, C)
+
+@njit(cache=True)
+
+# --- LINE 106 ---
+
+def fused_odd_kernel(odd, bound, spf, segment_lo, base_primes):
+
+    # --- LINE 107 ---
+
+    """Generate legs, partition, and check all admissible primitive pairs in JIT."""
+
+    # --- LINE 108 ---
+    #   $4load_global.0 = global(compatible_even_legs_jit: CPUDispatcher(<function compatible_even_legs_jit at 0x0000024BD443A8E0>))  :: type(CPUDispatcher(<function compatible_even_legs_jit at 0x0000024BD443A8E0>))
+    #   legs = call $4load_global.0(odd, bound, spf, segment_lo, base_primes, func=$4load_global.0, args=[Var(odd, odd_leg_numba_segmented.py:105), Var(bound, odd_leg_numba_segmented.py:105), Var(spf, odd_leg_numba_segmented.py:105), Var(segment_lo, odd_leg_numba_segmented.py:105), Var(base_primes, odd_leg_numba_segmented.py:105)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64, int64, Array(uint32, 1, 'C', False, aligned=True), int64, Array(int64, 1, 'C', False, aligned=True)) -> array(int64, 1d, C)
+    #   del spf
+    #   del segment_lo
+    #   del bound
+    #   del base_primes
+    #   del $4load_global.0
+
+    legs = compatible_even_legs_jit(odd, bound, spf, segment_lo, base_primes)
+
+    # --- LINE 109 ---
+    #   div = build_list(items=[])  :: list(int64)<iv=None>
+
+    div = []
+
+    # --- LINE 110 ---
+    #   nondiv = build_list(items=[])  :: list(int64)<iv=None>
+
+    nondiv = []
+
+    # --- LINE 111 ---
+    #   $52get_iter.11 = getiter(value=legs)  :: iter(array(int64, 1d, C))
+    #   del legs
+    #   $phi54.0 = $52get_iter.11  :: iter(array(int64, 1d, C))
+    #   del $52get_iter.11
+    #   jump 54
+    # label 54
+    #   $54for_iter.1 = iternext(value=$phi54.0)  :: pair<int64, bool>
+    #   $54for_iter.2 = pair_first(value=$54for_iter.1)  :: int64
+    #   $54for_iter.3 = pair_second(value=$54for_iter.1)  :: bool
+    #   del $54for_iter.1
+    #   $phi56.1 = $54for_iter.2  :: int64
+    #   del $54for_iter.2
+    #   branch $54for_iter.3, 56, 182
+    # label 56
+    #   del $54for_iter.3
+    #   e = $phi56.1  :: int64
+    #   del $phi56.1
+    # label 869
+    #   jump 54
+
+    for e in legs:
+
+        # --- LINE 112 ---
+        #   $const60.3.1 = const(int, 3)  :: Literal[int](3)
+        #   $binop_mod62.4 = e % $const60.3.1  :: int64
+        #   del $const60.3.1
+        #   $const66.5.2 = const(int, 0)  :: Literal[int](0)
+        #   $68compare_op.6 = $binop_mod62.4 == $const66.5.2  :: bool
+        #   del $const66.5.2
+        #   del $binop_mod62.4
+        #   $bool74 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+        #   $74pred = call $bool74($68compare_op.6, func=$bool74, args=(Var($68compare_op.6, odd_leg_numba_segmented.py:112),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+        #   del $bool74
+        #   del $68compare_op.6
+        #   branch $74pred, 76, 120
+
+        if e % 3 == 0:
+
+            # --- LINE 113 ---
+            # label 76
+            #   del $74pred
+            #   $78load_method.3 = getattr(value=div, attr=append)  :: BoundFunction(list.append for list(int64)<iv=None>)
+            #   $106call.5 = call $78load_method.3(e, func=$78load_method.3, args=[Var(e, odd_leg_numba_segmented.py:111)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> none
+            #   del e
+            #   del $78load_method.3
+            #   del $106call.5
+            #   jump 869
+
+            div.append(e)
+
+        # --- LINE 114 ---
+        # label 120
+        #   del $74pred
+        #   $const122.2.1 = const(int, 3)  :: Literal[int](3)
+        #   $binop_mod124.3 = odd % $const122.2.1  :: int64
+        #   del $const122.2.1
+        #   $const128.4.2 = const(int, 0)  :: Literal[int](0)
+        #   $130compare_op.5 = $binop_mod124.3 == $const128.4.2  :: bool
+        #   del $const128.4.2
+        #   del $binop_mod124.3
+        #   $bool136 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+        #   $136pred = call $bool136($130compare_op.5, func=$bool136, args=(Var($130compare_op.5, odd_leg_numba_segmented.py:114),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+        #   del $bool136
+        #   del $130compare_op.5
+        #   branch $136pred, 138, 180
+
+        elif odd % 3 == 0:
+
+            # --- LINE 115 ---
+            # label 138
+            #   del $136pred
+            #   $140load_method.3 = getattr(value=nondiv, attr=append)  :: BoundFunction(list.append for list(int64)<iv=None>)
+            #   $168call.5 = call $140load_method.3(e, func=$140load_method.3, args=[Var(e, odd_leg_numba_segmented.py:111)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> none
+            #   del e
+            #   del $168call.5
+            #   del $140load_method.3
+            #   jump 180
+            # label 180
+            #   del e
+            #   del $136pred
+            #   jump 869
+
+            nondiv.append(e)
+
+    # --- LINE 116 ---
+    # label 182
+    #   del $phi56.1
+    #   del $phi54.0
+    #   del $54for_iter.3
+    #   matches = build_list(items=[])  :: list(UniTuple(int64 x 2))<iv=None>
+
+    matches = []
+
+    # --- LINE 117 ---
+    #   tested = const(int, 0)  :: Literal[int](0)
+    #   del $210pred
+    #   tested.4 = tested  :: int64
+    #   del tested
+    #   del nondiv
+    #   del $210pred
+    #   tested.8 = tested  :: int64
+    #   del tested
+
+    tested = 0
+
+    # --- LINE 118 ---
+    #   rejected = const(int, 0)  :: Literal[int](0)
+    #   rejected.4 = rejected  :: int64
+    #   del rejected
+    #   rejected.8 = rejected  :: int64
+    #   del rejected
+
+    rejected = 0
+
+    # --- LINE 119 ---
+    #   $const196.4.1 = const(int, 3)  :: Literal[int](3)
+    #   $binop_mod198.5 = odd % $const196.4.1  :: int64
+    #   del $const196.4.1
+    #   $const202.6.2 = const(int, 0)  :: Literal[int](0)
+    #   $204compare_op.7 = $binop_mod198.5 == $const202.6.2  :: bool
+    #   del $const202.6.2
+    #   del $binop_mod198.5
+    #   $bool210 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+    #   $210pred = call $bool210($204compare_op.7, func=$bool210, args=(Var($204compare_op.7, odd_leg_numba_segmented.py:119),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+    #   del $bool210
+    #   del $204compare_op.7
+    #   branch $210pred, 212, 468
+
+    if odd % 3 == 0:
+
+        # --- LINE 120 ---
+        # label 212
+        #   $214get_iter.1 = getiter(value=div)  :: iter(list(int64)<iv=None>)
+        #   del div
+        #   $phi216.0 = $214get_iter.1  :: iter(list(int64)<iv=None>)
+        #   del $214get_iter.1
+        #   jump 216
+        # label 216
+        #   $216for_iter.1 = iternext(value=$phi216.0)  :: pair<int64, bool>
+        #   $216for_iter.2 = pair_first(value=$216for_iter.1)  :: int64
+        #   $216for_iter.3 = pair_second(value=$216for_iter.1)  :: bool
+        #   del $216for_iter.1
+        #   $phi218.1 = $216for_iter.2  :: int64
+        #   del $216for_iter.2
+        #   branch $216for_iter.3, 218, 466
+        # label 218
+        #   e1 = $phi218.1  :: int64
+        #   del $phi218.1
+        # label 466
+        #   jump 866
+
+        for e1 in div:
+
+            # --- LINE 121 ---
+            #   $220load_global.2 = global(math: <module 'math' (built-in)>)  :: Module(<module 'math' (built-in)>)
+            #   $232load_attr.4 = getattr(value=$220load_global.2, attr=gcd)  :: Function(<built-in function gcd>)
+            #   del $220load_global.2
+            #   g1 = call $232load_attr.4(odd, e1, func=$232load_attr.4, args=[Var(odd, odd_leg_numba_segmented.py:105), Var(e1, odd_leg_numba_segmented.py:120)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64, int64) -> int64
+            #   del $232load_attr.4
+
+            g1 = math.gcd(odd, e1)
+
+            # --- LINE 122 ---
+            #   sq1 = e1 * e1  :: int64
+
+            sq1 = e1 * e1
+
+            # --- LINE 123 ---
+            #   $274get_iter.12 = getiter(value=nondiv)  :: iter(list(int64)<iv=None>)
+            #   $phi276.1 = $274get_iter.12  :: iter(list(int64)<iv=None>)
+            #   del $274get_iter.12
+            #   jump 276
+            # label 276
+            #   $276for_iter.2 = iternext(value=$phi276.1)  :: pair<int64, bool>
+            #   $276for_iter.3 = pair_first(value=$276for_iter.2)  :: int64
+            #   $276for_iter.4 = pair_second(value=$276for_iter.2)  :: bool
+            #   del $276for_iter.2
+            #   $phi278.2 = $276for_iter.3  :: int64
+            #   del $276for_iter.3
+            #   branch $276for_iter.4, 278, 464
+            # label 278
+            #   del $276for_iter.4
+            #   e2 = $phi278.2  :: int64
+            #   del $phi278.2
+            # label 464
+            #   jump 216
+            # label 868
+            #   jump 276
+
+            for e2 in nondiv:
+
+                # --- LINE 124 ---
+                #   $280load_global.3 = global(math: <module 'math' (built-in)>)  :: Module(<module 'math' (built-in)>)
+                #   $292load_attr.5 = getattr(value=$280load_global.3, attr=gcd)  :: Function(<built-in function gcd>)
+                #   del $280load_global.3
+                #   $310call.8 = call $292load_attr.5(g1, e2, func=$292load_attr.5, args=[Var(g1, odd_leg_numba_segmented.py:121), Var(e2, odd_leg_numba_segmented.py:123)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64, int64) -> int64
+                #   del $292load_attr.5
+                #   $const320.9.3 = const(int, 1)  :: Literal[int](1)
+                #   $322compare_op.10 = $310call.8 != $const320.9.3  :: bool
+                #   del $const320.9.3
+                #   del $310call.8
+                #   $bool328 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+                #   $328pred = call $bool328($322compare_op.10, func=$bool328, args=(Var($322compare_op.10, odd_leg_numba_segmented.py:124),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+                #   del $bool328
+                #   del $322compare_op.10
+                #   branch $328pred, 330, 342
+
+                if math.gcd(g1, e2) != 1:
+
+                    # --- LINE 125 ---
+                    #   rejected.3 = rejected.4  :: int64
+                    #   del rejected.4
+                    # label 330
+                    #   $const332.3.3 = const(int, 1)  :: Literal[int](1)
+                    #   $binop_iadd334.4 = inplace_binop(fn=<built-in function iadd>, immutable_fn=<built-in function add>, lhs=rejected.3, rhs=$const332.3.3, static_lhs=Undefined, static_rhs=Undefined)  :: int64
+                    #   del rejected.3
+                    #   del $const332.3.3
+                    #   rejected.1 = $binop_iadd334.4  :: int64
+                    #   del $binop_iadd334.4
+                    #   rejected.5 = rejected.1  :: int64
+                    #   del rejected.1
+                    #   rejected.5 = rejected.3  :: int64
+                    #   del rejected.3
+                    #   rejected.4 = rejected.3  :: int64
+                    #   del rejected.3
+                    #   rejected.9 = rejected.4  :: int64
+                    #   del rejected.4
+                    #   rejected.3 = rejected.5  :: int64
+                    #   del rejected.5
+
+                    rejected += 1
+
+                    # --- LINE 126 ---
+                    #   jump 868
+
+                    continue
+
+                # --- LINE 127 ---
+                #   del $216for_iter.3
+                #   tested.3 = tested.4  :: int64
+                #   del tested.4
+                #   del e2
+                #   del $328pred
+                #   tested.5 = tested.3  :: int64
+                #   del tested.3
+                # label 342
+                #   del $328pred
+                #   $const344.3.3 = const(int, 1)  :: Literal[int](1)
+                #   $binop_iadd346.4 = inplace_binop(fn=<built-in function iadd>, immutable_fn=<built-in function add>, lhs=tested.3, rhs=$const344.3.3, static_lhs=Undefined, static_rhs=Undefined)  :: int64
+                #   del tested.3
+                #   del $const344.3.3
+                #   tested.1 = $binop_iadd346.4  :: int64
+                #   del $binop_iadd346.4
+                #   del e2
+                #   del $414pred
+                #   tested.5 = tested.1  :: int64
+                #   del tested.1
+                #   del sq1
+                #   del g1
+                #   del e1
+                #   del $phi278.2
+                #   del $phi276.1
+                #   del $276for_iter.4
+                #   tested.4 = tested.3  :: int64
+                #   del tested.3
+                #   del odd
+                #   del nondiv
+                #   del $phi218.1
+                #   del $phi216.0
+                #   del $216for_iter.3
+                #   tested.9 = tested.4  :: int64
+                #   del tested.4
+                #   tested.3 = tested.5  :: int64
+                #   del tested.5
+
+                tested += 1
+
+                # --- LINE 128 ---
+                #   $binop_mul358.8 = e2 * e2  :: int64
+                #   n = sq1 + $binop_mul358.8  :: int64
+                #   del $binop_mul358.8
+
+                n = sq1 + e2 * e2
+
+                # --- LINE 129 ---
+                #   $368load_global.10 = global(integer_sqrt64: CPUDispatcher(<function integer_sqrt64 at 0x0000024BEC2723E0>))  :: type(CPUDispatcher(<function integer_sqrt64 at 0x0000024BEC2723E0>))
+                #   r = call $368load_global.10(n, func=$368load_global.10, args=[Var(n, odd_leg_numba_segmented.py:128)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> int64
+                #   del $368load_global.10
+
+                r = integer_sqrt64(n)
+
+                # --- LINE 130 ---
+                #   $binop_mul402.16 = r * r  :: int64
+                #   del r
+                #   $408compare_op.18 = $binop_mul402.16 == n  :: bool
+                #   del n
+                #   del $binop_mul402.16
+                #   $bool414 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+                #   $414pred = call $bool414($408compare_op.18, func=$bool414, args=(Var($408compare_op.18, odd_leg_numba_segmented.py:130),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+                #   del $bool414
+                #   del $408compare_op.18
+                #   branch $414pred, 416, 462
+
+                if r * r == n:
+
+                    # --- LINE 131 ---
+                    # label 416
+                    #   del $414pred
+                    #   $418load_method.4 = getattr(value=matches, attr=append)  :: BoundFunction(list.append for list(UniTuple(int64 x 2))<iv=None>)
+                    #   $444build_tuple.7 = build_tuple(items=[Var(e1, odd_leg_numba_segmented.py:120), Var(e2, odd_leg_numba_segmented.py:123)])  :: UniTuple(int64 x 2)
+                    #   del e2
+                    #   $450call.8 = call $418load_method.4($444build_tuple.7, func=$418load_method.4, args=[Var($444build_tuple.7, odd_leg_numba_segmented.py:131)], kws=(), vararg=None, varkwarg=None, target=None)  :: (UniTuple(int64, 2),) -> none
+                    #   del $450call.8
+                    #   del $444build_tuple.7
+                    #   del $418load_method.4
+                    #   jump 462
+                    # label 462
+                    #   jump 868
+
+                    matches.append((e1, e2))
+
+    # --- LINE 132 ---
+
+    else:
+
+        # --- LINE 133 ---
+        # label 468
+        #   $468load_global.0 = global(range: <class 'range'>)  :: Function(<class 'range'>)
+        #   $480load_global.2 = global(len: <built-in function len>)  :: Function(<built-in function len>)
+        #   $498call.5 = call $480load_global.2(div, func=$480load_global.2, args=[Var(div, odd_leg_numba_segmented.py:109)], kws=(), vararg=None, varkwarg=None, target=None)  :: (List(int64, False),) -> int64
+        #   del $480load_global.2
+        #   $512call.6 = call $468load_global.0($498call.5, func=$468load_global.0, args=[Var($498call.5, odd_leg_numba_segmented.py:133)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> range_state_int64
+        #   del $498call.5
+        #   del $468load_global.0
+        #   $522get_iter.7 = getiter(value=$512call.6)  :: range_iter_int64
+        #   del $512call.6
+        #   $phi524.0 = $522get_iter.7  :: range_iter_int64
+        #   del $522get_iter.7
+        #   jump 524
+        # label 524
+        #   $524for_iter.1 = iternext(value=$phi524.0)  :: pair<int64, bool>
+        #   $524for_iter.2 = pair_first(value=$524for_iter.1)  :: int64
+        #   $524for_iter.3 = pair_second(value=$524for_iter.1)  :: bool
+        #   del $524for_iter.1
+        #   $phi526.1 = $524for_iter.2  :: int64
+        #   del $524for_iter.2
+        #   branch $524for_iter.3, 526, 866
+        # label 526
+        #   i = $phi526.1  :: int64
+        #   del $phi526.1
+
+        for i in range(len(div)):
+
+            # --- LINE 134 ---
+            #   e1.1 = getitem(value=div, index=i, fn=<built-in function getitem>)  :: int64
+
+            e1 = div[i]
+
+            # --- LINE 135 ---
+            #   $544load_global.5 = global(math: <module 'math' (built-in)>)  :: Module(<module 'math' (built-in)>)
+            #   $556load_attr.7 = getattr(value=$544load_global.5, attr=gcd)  :: Function(<built-in function gcd>)
+            #   del $544load_global.5
+            #   g1.1 = call $556load_attr.7(odd, e1.1, func=$556load_attr.7, args=[Var(odd, odd_leg_numba_segmented.py:105), Var(e1.1, odd_leg_numba_segmented.py:134)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64, int64) -> int64
+            #   del $556load_attr.7
+
+            g1 = math.gcd(odd, e1)
+
+            # --- LINE 136 ---
+            #   sq1.1 = e1.1 * e1.1  :: int64
+
+            sq1 = e1 * e1
+
+            # --- LINE 137 ---
+            #   $596load_global.14 = global(range: <class 'range'>)  :: Function(<class 'range'>)
+            #   $const610.17.3 = const(int, 1)  :: Literal[int](1)
+            #   $binop_add612.18 = i + $const610.17.3  :: int64
+            #   del i
+            #   del $const610.17.3
+            #   $616load_global.19 = global(len: <built-in function len>)  :: Function(<built-in function len>)
+            #   $634call.22 = call $616load_global.19(div, func=$616load_global.19, args=[Var(div, odd_leg_numba_segmented.py:109)], kws=(), vararg=None, varkwarg=None, target=None)  :: (List(int64, False),) -> int64
+            #   del $616load_global.19
+            #   $648call.23 = call $596load_global.14($binop_add612.18, $634call.22, func=$596load_global.14, args=[Var($binop_add612.18, odd_leg_numba_segmented.py:137), Var($634call.22, odd_leg_numba_segmented.py:137)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64, int64) -> range_state_int64
+            #   del $binop_add612.18
+            #   del $634call.22
+            #   del $596load_global.14
+            #   $658get_iter.24 = getiter(value=$648call.23)  :: range_iter_int64
+            #   del $648call.23
+            #   $phi660.1 = $658get_iter.24  :: range_iter_int64
+            #   del $658get_iter.24
+            #   jump 660
+            # label 660
+            #   $660for_iter.2 = iternext(value=$phi660.1)  :: pair<int64, bool>
+            #   $660for_iter.3 = pair_first(value=$660for_iter.2)  :: int64
+            #   $660for_iter.4 = pair_second(value=$660for_iter.2)  :: bool
+            #   del $660for_iter.2
+            #   $phi662.2 = $660for_iter.3  :: int64
+            #   del $660for_iter.3
+            #   branch $660for_iter.4, 662, 864
+            # label 662
+            #   del $660for_iter.4
+            #   j = $phi662.2  :: int64
+            #   del $phi662.2
+            # label 864
+            #   jump 524
+            # label 867
+            #   jump 660
+
+            for j in range(i + 1, len(div)):
+
+                # --- LINE 138 ---
+                #   e2.1 = getitem(value=div, index=j, fn=<built-in function getitem>)  :: int64
+                #   del j
+
+                e2 = div[j]
+
+                # --- LINE 139 ---
+                #   $680load_global.6 = global(math: <module 'math' (built-in)>)  :: Module(<module 'math' (built-in)>)
+                #   $692load_attr.8 = getattr(value=$680load_global.6, attr=gcd)  :: Function(<built-in function gcd>)
+                #   del $680load_global.6
+                #   $710call.11 = call $692load_attr.8(g1.1, e2.1, func=$692load_attr.8, args=[Var(g1.1, odd_leg_numba_segmented.py:135), Var(e2.1, odd_leg_numba_segmented.py:138)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64, int64) -> int64
+                #   del $692load_attr.8
+                #   $const720.12.3 = const(int, 1)  :: Literal[int](1)
+                #   $722compare_op.13 = $710call.11 != $const720.12.3  :: bool
+                #   del $const720.12.3
+                #   del $710call.11
+                #   $bool728 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+                #   $728pred = call $bool728($722compare_op.13, func=$bool728, args=(Var($722compare_op.13, odd_leg_numba_segmented.py:139),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+                #   del $bool728
+                #   del $722compare_op.13
+                #   branch $728pred, 730, 742
+
+                if math.gcd(g1, e2) != 1:
+
+                    # --- LINE 140 ---
+                    #   rejected.9 = rejected.8  :: int64
+                    #   rejected.6 = rejected.8  :: int64
+                    #   del rejected.8
+                    # label 730
+                    #   $const732.3.3 = const(int, 1)  :: Literal[int](1)
+                    #   $binop_iadd734.4 = inplace_binop(fn=<built-in function iadd>, immutable_fn=<built-in function add>, lhs=rejected.6, rhs=$const732.3.3, static_lhs=Undefined, static_rhs=Undefined)  :: int64
+                    #   del rejected.6
+                    #   del $const732.3.3
+                    #   rejected.2 = $binop_iadd734.4  :: int64
+                    #   del $binop_iadd734.4
+                    #   rejected.7 = rejected.2  :: int64
+                    #   del rejected.2
+                    #   rejected.7 = rejected.6  :: int64
+                    #   del rejected.6
+                    #   rejected.8 = rejected.6  :: int64
+                    #   del rejected.6
+                    #   rejected.6 = rejected.7  :: int64
+                    #   del rejected.7
+
+                    rejected += 1
+
+                    # --- LINE 141 ---
+                    #   jump 867
+
+                    continue
+
+                # --- LINE 142 ---
+                #   tested.9 = tested.8  :: int64
+                #   del tested.9
+                #   del rejected.9
+                #   del $524for_iter.3
+                #   tested.6 = tested.8  :: int64
+                #   del tested.8
+                #   del e2.1
+                #   del $728pred
+                #   tested.7 = tested.6  :: int64
+                #   del tested.6
+                # label 742
+                #   del $728pred
+                #   $const744.3.3 = const(int, 1)  :: Literal[int](1)
+                #   $binop_iadd746.4 = inplace_binop(fn=<built-in function iadd>, immutable_fn=<built-in function add>, lhs=tested.6, rhs=$const744.3.3, static_lhs=Undefined, static_rhs=Undefined)  :: int64
+                #   del tested.6
+                #   del $const744.3.3
+                #   tested.2 = $binop_iadd746.4  :: int64
+                #   del $binop_iadd746.4
+                #   del e2.1
+                #   del $814pred
+                #   tested.7 = tested.2  :: int64
+                #   del tested.2
+                #   del sq1.1
+                #   del g1.1
+                #   del e1.1
+                #   del $phi662.2
+                #   del $phi660.1
+                #   del $660for_iter.4
+                #   tested.8 = tested.6  :: int64
+                #   del tested.6
+                #   tested.6 = tested.7  :: int64
+                #   del tested.7
+
+                tested += 1
+
+                # --- LINE 143 ---
+                #   $binop_mul758.8 = e2.1 * e2.1  :: int64
+                #   n.1 = sq1.1 + $binop_mul758.8  :: int64
+                #   del $binop_mul758.8
+
+                n = sq1 + e2 * e2
+
+                # --- LINE 144 ---
+                #   $768load_global.10 = global(integer_sqrt64: CPUDispatcher(<function integer_sqrt64 at 0x0000024BEC2723E0>))  :: type(CPUDispatcher(<function integer_sqrt64 at 0x0000024BEC2723E0>))
+                #   r.1 = call $768load_global.10(n.1, func=$768load_global.10, args=[Var(n.1, odd_leg_numba_segmented.py:143)], kws=(), vararg=None, varkwarg=None, target=None)  :: (int64,) -> int64
+                #   del $768load_global.10
+
+                r = integer_sqrt64(n)
+
+                # --- LINE 145 ---
+                #   $binop_mul802.16 = r.1 * r.1  :: int64
+                #   del r.1
+                #   $808compare_op.18 = $binop_mul802.16 == n.1  :: bool
+                #   del n.1
+                #   del $binop_mul802.16
+                #   $bool814 = global(bool: <class 'bool'>)  :: Function(<class 'bool'>)
+                #   $814pred = call $bool814($808compare_op.18, func=$bool814, args=(Var($808compare_op.18, odd_leg_numba_segmented.py:145),), kws=(), vararg=None, varkwarg=None, target=None)  :: (bool,) -> bool
+                #   del $bool814
+                #   del $808compare_op.18
+                #   branch $814pred, 816, 862
+
+                if r * r == n:
+
+                    # --- LINE 146 ---
+                    # label 816
+                    #   del $814pred
+                    #   $818load_method.4 = getattr(value=matches, attr=append)  :: BoundFunction(list.append for list(UniTuple(int64 x 2))<iv=None>)
+                    #   $844build_tuple.7 = build_tuple(items=[Var(e1.1, odd_leg_numba_segmented.py:134), Var(e2.1, odd_leg_numba_segmented.py:138)])  :: UniTuple(int64 x 2)
+                    #   del e2.1
+                    #   $850call.8 = call $818load_method.4($844build_tuple.7, func=$818load_method.4, args=[Var($844build_tuple.7, odd_leg_numba_segmented.py:146)], kws=(), vararg=None, varkwarg=None, target=None)  :: (UniTuple(int64, 2),) -> none
+                    #   del $850call.8
+                    #   del $844build_tuple.7
+                    #   del $818load_method.4
+                    #   jump 862
+                    # label 862
+                    #   jump 867
+
+                    matches.append((e1, e2))
+
+    # --- LINE 147 ---
+    # label 866
+    #   del tested.8
+    #   del rejected.8
+    #   del odd
+    #   del div
+    #   del $phi526.1
+    #   del $phi524.0
+    #   del $524for_iter.3
+    #   $872build_tuple.3 = build_tuple(items=[Var(matches, odd_leg_numba_segmented.py:116), Var(tested.9, odd_leg_numba_segmented.py:147), Var(rejected.9, odd_leg_numba_segmented.py:147)])  :: Tuple(list(UniTuple(int64 x 2))<iv=None>, int64, int64)
+    #   del tested.9
+    #   del rejected.9
+    #   del matches
+    #   $874return_value.4 = cast(value=$872build_tuple.3)  :: Tuple(list(UniTuple(int64 x 2))<iv=None>, int64, int64)
+    #   del $872build_tuple.3
+    #   return $874return_value.4
+
+    return matches, tested, rejected
+
+
+================================================================================

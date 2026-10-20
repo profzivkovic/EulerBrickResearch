@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""EulerBrickResearch v0.16.0: segmented SPF first-factor optimization.
-Experimental factorization-only change; preserves pair-check mathematics.
+"""EulerBrickResearch v0.17.0: audited 2B segmented-SPF search.
+Preserves v0.16.0 algorithm; raises only the experimental int64 bound.
+Validated through 2B; promoted after bounded regression checks.
 Does not modify stable source or verified catalog.
 """
 import argparse
@@ -14,7 +15,7 @@ from pathlib import Path
 import numpy as np
 from numba import njit
 
-MAX_SAFE_BOUND = 1_000_000_000  # 3*B**2 <= 3e18 < 2**63-1
+MAX_SAFE_BOUND = 2_000_000_000  # experimental: 2*B**2 <= 8e18 < int64 max; three squares in Python
 
 
 @njit(cache=True)
@@ -166,16 +167,24 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--progress-every', type=int, default=0)
     parser.add_argument('--segment-odds', type=int, default=100_000)
+    parser.add_argument('--confirm-2b', action='store_true',
+                        help='Explicitly permit an experimental run above 1B')
     args = parser.parse_args()
     if not 1 <= args.max_edge <= MAX_SAFE_BOUND:
         parser.error(f'--max-edge must be in 1..{MAX_SAFE_BOUND} for int64 safety')
+    if args.max_edge > 1_000_000_000 and not args.confirm_2b:
+        parser.error('Experimental bounds above 1B require --confirm-2b')
     if args.segment_odds < 1:
         parser.error('--segment-odds must be positive')
     if args.progress_every < 0:
         parser.error('--progress-every must be nonnegative')
 
+    if args.output.resolve() == args.source.resolve():
+        parser.error('--output must not overwrite the stable source')
+    if args.reference and args.output.resolve() == args.reference.resolve():
+        parser.error('--output must not overwrite the reference catalog')
     stable = load_stable(args.source)
-    print('ODD-LEG segmented v0.16.0 / first-factor optimization', flush=True)
+    print('ODD-LEG segmented v0.17.0 / audited 2B bound', flush=True)
     print(f'Bound={args.max_edge:,}; stable source={args.source}', flush=True)
     t0 = time.perf_counter()
     # Import the already-tested segmented SPF implementation from its

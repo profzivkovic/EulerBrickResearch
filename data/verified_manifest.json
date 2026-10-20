@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "searched_max_edge": 1000000000,
-  "brick_count": 4631,
+  "searched_max_edge": 2000000000,
+  "brick_count": 6023,
   "perfect_cuboid_count": 0,
-  "sha256": "de0d93fdb306c503572d528cbeb1839b517e2bc9155a4367146c7a86e0491cd3",
-  "updated_utc": "2026-10-20T12:25:31.486959+00:00",
-  "source_file": "odd_leg_numba_104_1b.csv",
+  "sha256": "e06394157055c226ff0074dbb246b9888a34b1293c5c284673fe14ecd33d42ab",
+  "updated_utc": "2026-10-20T22:46:03.382159+00:00",
+  "source_file": "v0170_test_2b.csv",
   "verification": "Exact arithmetic for every stored row; completeness of generator not independently proved"
 }

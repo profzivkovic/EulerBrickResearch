@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""EulerBrickResearch v0.16.0 prototype: segmented SPF first-factor optimization.
+"""EulerBrickResearch v0.16.0: segmented SPF first-factor optimization.
 Experimental factorization-only change; preserves pair-check mathematics.
 Does not modify stable source or verified catalog.
 """
@@ -175,7 +175,7 @@ def main():
         parser.error('--progress-every must be nonnegative')
 
     stable = load_stable(args.source)
-    print('ODD-LEG segmented v0.16.0 prototype / first-factor optimization', flush=True)
+    print('ODD-LEG segmented v0.16.0 / first-factor optimization', flush=True)
     print(f'Bound={args.max_edge:,}; stable source={args.source}', flush=True)
     t0 = time.perf_counter()
     # Import the already-tested segmented SPF implementation from its
