@@ -40,3 +40,7 @@ Thumbs.db
 # Generated growth-model analysis reports
 /growth_model_comparison.csv
 /growth_robustness_0121.csv
+
+# Generated space-diagonal analysis reports
+/space_diagonal_analysis_0130.csv
+/space_diagonal_stability_0131.csv
