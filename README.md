@@ -2,7 +2,7 @@
 
 Reproducible, exact-integer research into **Euler bricks** and the **perfect cuboid problem**, using exact integer arithmetic in Python, with an optional NumPy/Numba-accelerated experimental engine.
 
-**Project status:** stable segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, independently cross-checked through **100,000,000** and extended with exact row validation through **200,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**; experimental fused Numba odd-leg engine **v0.10.4**, regression-tested through **200,000,000** and extended through **500,000,000** with independent exact-arithmetic row validation. The verified catalog contains **3,556 primitive Euler bricks** through 500M (1,047 additional bricks beyond 200M). An exact-set comparison with Giovanni Resta's published OEIS table independently corroborates **all 3,556 triples** for largest edge strictly below 500M.
+**Project status:** stable segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, independently cross-checked through **100,000,000** and extended with exact row validation through **200,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**; experimental fused Numba odd-leg engine **v0.10.4**, regression-tested through **200,000,000** and extended through **1,000,000,000** with independent exact-arithmetic row validation. The verified catalog contains **4,631 primitive Euler bricks** through 1B (1,075 additional bricks beyond 500M). An exact-set comparison with Giovanni Resta's published OEIS table independently corroborates **all 3,556 triples** for largest edge strictly below 500M; the 1B result additionally matches the published total count of 4,631, but a full independent triple-by-triple comparison through 1B has not been performed.
 
 > **Scientific scope:** No perfect cuboid was found in the finite searches and experiments reported here. This is **not a proof of nonexistence**. Exact validation certifies the arithmetic properties of reported rows, but does not by itself establish that a search implementation has found every solution within its bound. Heuristic experiments make no completeness claim.
 
@@ -77,7 +77,7 @@ The 20M timing is approximate because its initial run encountered a missing refe
 
 The **100M** run reported 231.096 s for pair generation, 1,899.320 s for segment processing, and 2.174 s for consolidation. The independent CSV validator reported **1,884 rows, 1,884 unique primitive Euler bricks, zero perfect cuboids**, and confirmed that all **1,395** entries in the 50M catalog occur in the 100M result. These checks establish row-level arithmetic validity and preservation of the previous catalog; they are not an independent proof of enumeration completeness.
 
-The current verified **500M** catalog is maintained at `data/verified_euler_bricks.csv`, with metadata and a SHA-256 checksum in `data/verified_manifest.json`. Raw outputs such as `bricks_100m.csv` are separate from the canonical catalog.
+The current verified **1B** catalog is maintained at `data/verified_euler_bricks.csv`, with metadata and a SHA-256 checksum in `data/verified_manifest.json`. Raw outputs such as `bricks_100m.csv` are separate from the canonical catalog.
 
 ### Reproduce a bounded search
 
@@ -111,9 +111,9 @@ python tools/validate_bricks.py `
   --subset-max-edge 50000000
 ```
 
-The subset bound above illustrates a **historical 50M-to-100M upgrade**. The current verified catalog is already at 500M; do not rerun this historical upgrade against the current catalog. For future updates, use the actual catalog bound recorded in `data/verified_manifest.json`. The validator checks sorted positive edges, bound, primitivity, all three integer face diagonals, uniqueness, and any supplied CSV metadata (including the space-diagonal tests and normalized gap).
+The subset bound above illustrates a **historical 50M-to-100M upgrade**. The current verified catalog is already at 1B; do not rerun this historical upgrade against the current catalog. For future updates, use the actual catalog bound recorded in `data/verified_manifest.json`. The validator checks sorted positive edges, bound, primitivity, all three integer face diagonals, uniqueness, and any supplied CSV metadata (including the space-diagonal tests and normalized gap).
 
-Historical example only (do not run against the current 500M catalog):
+Historical example only (do not run against the current 1B catalog):
 
 ```powershell
 python tools/update_verified_catalog.py `
@@ -125,15 +125,15 @@ python tools/update_verified_catalog.py `
 
 The updater independently checks every incoming triple, validates the existing catalog against its manifest and SHA-256 checksum, rejects a decreasing bound, and requires the incoming set to include **all** previously cataloged bricks. It then writes a canonical, deduplicated catalog and updated manifest. It does **not** silently repair a missing old result by taking a union.
 
-Validate the current 500M catalog:
+Validate the current 1B catalog:
 
 ```powershell
 python tools/validate_bricks.py `
   --input data/verified_euler_bricks.csv `
-  --max-edge 500000000
+  --max-edge 1000000000
 ```
 
-For the current 500M dataset, the expected successful result is `rows=3556; unique=3556; perfect=0` and `VALIDATION PASSED`. Only then review and commit the catalog and manifest. The updater's two-file replacement is not a single atomic transaction; if interrupted, its checksum check can detect an inconsistent catalog/manifest pair on a subsequent run.
+For the current 1B dataset, the expected successful result is `rows=4631; unique=4631; perfect=0` and `VALIDATION PASSED`. Only then review and commit the catalog and manifest. The updater's two-file replacement is not a single atomic transaction; if interrupted, its checksum check can detect an inconsistent catalog/manifest pair on a subsequent run.
 
 ## Experimental metaheuristics: v0.8.0–v0.8.2
 
@@ -289,8 +289,9 @@ The v0.10.4 source is the renamed, numerically hardened `v0.10.3-safe` variant. 
 | 100,000,000 | 1,884 | 501,018,824 | 0 | 158.897 s | EXACT SET MATCH |
 | 200,000,000 | **2,509** | **1,121,177,836** | **0** | **544.830 s** | **EXACT SET MATCH** |
 | 500,000,000 | **3,556** | **3,237,540,952** | **0** | **979.899 s** | Independent row validation; 200M subset preserved |
+| 1,000,000,000 | **4,631** | **7,198,444,485** | **0** | **1,833.040 s** | Independent row validation; 500M subset preserved; published count agrees |
 
-These are recorded individual run times, not a controlled benchmark of v0.10.4. The 1M smoke-test time includes initial Numba compilation; the 10M–200M runs were performed before the display-label rename. The 500M run used the released v0.10.4 label. At 200M, the fused kernel processed 100,000,000 odd values, and the SPF sieve took 38.595 s. The comparison uses the existing verified catalog; since the accelerated engine shares the odd-leg construction with v0.9.9, this is **regression evidence, not an independent enumeration-completeness proof**.
+These are recorded individual run times, not a controlled benchmark of v0.10.4. The 1M smoke-test time includes initial Numba compilation; the 10M–200M runs were performed before the display-label rename. The 500M and 1B runs used the released v0.10.4 label. At 200M, the fused kernel processed 100,000,000 odd values, and the SPF sieve took 38.595 s. The historical comparisons used the corresponding bounded reference sets; since the accelerated engine shares the odd-leg construction with v0.9.9, this is **regression evidence, not an independent enumeration-completeness proof**.
 
 A controlled **three-cycle interleaved 10M benchmark** compared stable v0.9.9 with the earlier *original* v0.10.3 (not v0.10.4). The stable median was **55.066 s** and the original v0.10.3 median was **13.076 s**, a **4.21×** ratio. Do not attribute this controlled figure to v0.10.4. A separately recorded v0.10.4 run at 200M took 544.830 s versus an earlier v0.9.9 run of 2,015.158 s (3.70× ratio, **not** a controlled paired benchmark).
 
@@ -325,7 +326,56 @@ python -u src/odd_leg_numba.py `
   --progress-every 10000000
 ```
 
-Do **not** pass the current 500M catalog as `--reference` when attempting to extend beyond 500M: an exact-set comparison would reject valid new rows. Validate the output and preserve the current catalog as a subset before any future update. At 500M, the SPF array alone occupies approximately 2 GB; peak process memory may be higher.
+Do **not** pass a smaller-bound catalog as `--reference` when attempting to extend beyond its bound: an exact-set comparison would reject valid new rows. Validate the output and preserve the current catalog as a subset before any future update. At 500M, the SPF array alone occupies approximately 2 GB; peak process memory may be higher.
+
+### Extended Numba search through 1B (2026-10-20 UTC)
+
+The unchanged v0.10.4 engine completed a search with inclusive maximum edge **1,000,000,000**, finding **4,631 distinct primitive Euler bricks**, **1,075 additional bricks** beyond 500M, and **zero perfect cuboids**.
+
+| v0.10.4 metric | 1B |
+|---|---:|
+| Primitive candidate pairs | 7,198,444,485 |
+| Rejected nonprimitive pairs | 10,004,896,982 |
+| Odd-value kernel calls | 500,000,000 |
+| SPF sieve time | 207.534 s |
+| Numba compilation time | 0.522 s |
+| Search time | 1,624.970 s |
+| Fused kernel time (within search) | 1,507.353 s |
+| Total elapsed (including compilation) | **1,833.040 s** |
+| Primitive Euler bricks | **4,631** |
+| Perfect cuboids | **0** |
+
+The independently implemented exact-arithmetic validator reported `rows=4631; unique=4631; perfect=0` and `VALIDATION PASSED`. The 500M backup subset check reported `rows=3556; unique=3556; missing=0`. The guarded catalog updater reported `previous=3556, added=1075, total=4631`; the canonical catalog was then validated again with the same successful results.
+
+The manifest records `searched_max_edge=1000000000`, `brick_count=4631`, `perfect_cuboid_count=0`, source file `odd_leg_numba_104_1b.csv`, and catalog SHA-256:
+
+```text
+de0d93fdb306c503572d528cbeb1839b517e2bc9155a4367146c7a86e0491cd3
+```
+
+The total of **4,631** agrees with the published 1B count in [OEIS A239618](https://oeis.org/A239618). This is **count-level corroboration only**, not an independent exact-set comparison through 1B. The independently published triple-by-triple comparison remains limited to 500M. Neither row validation nor count agreement alone proves the search implementation complete, and zero perfect cuboids in this finite search does not prove global nonexistence.
+
+Reproduce the 1B search from the repository root in PowerShell (requires 64-bit Python and substantial available RAM; the uint32 SPF buffer alone occupies approximately 3.73 GiB):
+
+```powershell
+python -u src/odd_leg_numba.py `
+  --source src/odd_leg_search.py `
+  --max-edge 1000000000 `
+  --output odd_leg_numba_104_1b.csv `
+  --progress-every 10000000
+```
+
+Validate the raw output against a preserved 500M catalog (not against the current 1B catalog as a subset):
+
+```powershell
+python tools/validate_bricks.py `
+  --input odd_leg_numba_104_1b.csv `
+  --max-edge 1000000000 `
+  --subset backups/verified_euler_bricks_500m.csv `
+  --subset-max-edge 500000000
+```
+
+The raw 1B CSV and local backup are workspace artifacts; the canonical committed artifacts are `data/verified_euler_bricks.csv` and `data/verified_manifest.json`. The script writes the output CSV only after the search finishes.
 
 ### Reproduce the 200M accelerated regression
 
@@ -335,11 +385,10 @@ From the repository root in PowerShell, after installing compatible NumPy and Nu
 python src/odd_leg_numba.py `
   --source src/odd_leg_search.py `
   --max-edge 200000000 `
-  --reference data/verified_euler_bricks.csv `
   --output odd_leg_numba_104_200m.csv
 ```
 
-Expected result: 2,509 primitive bricks, zero perfect cuboids, and `EXACT SET MATCH` against the 200M subset of the current 500M catalog. The SPF array alone occupies approximately 800 MB at 200M; total process memory is higher. The program currently restricts `--max-edge` to at most 1,000,000,000 for signed-64-bit arithmetic, but running near that limit requires adequate RAM and additional large-bound operational testing.
+Expected result: 2,509 primitive bricks and zero perfect cuboids. **Do not use the current 1B catalog as `--reference` for this 200M run:** the reference comparison requires the same bound and will reject the additional catalog rows. To reproduce the historical `EXACT SET MATCH`, use a separately preserved 200M reference CSV. The SPF array alone occupies approximately 800 MB at 200M; total process memory is higher. The program currently restricts `--max-edge` to at most 1,000,000,000 for signed-64-bit arithmetic, and the 1B run completed successfully; adequate available RAM is still required for reproduction.
 
 ### Bounded audit of the stable odd-leg engine
 
@@ -391,11 +440,11 @@ python tools/compare_oeis_resta.py `
   --max-edge 500000000
 ```
 
-The recorded output was `MISSING_FROM_LOCAL: 0`, `EXTRA_IN_LOCAL: 0`, and `EXACT SET MATCH`. The checksum identifies the exact external reference snapshot used. This **independently corroborates the catalog against a published enumeration**; it is not a formal proof of completeness of either enumerator or a resolution of the perfect cuboid problem. Keep `references/resta_a031173.txt` excluded from Git (see `.gitignore`).
+The recorded 500M comparison output was `MISSING_FROM_LOCAL: 0`, `EXTRA_IN_LOCAL: 0`, and `EXACT SET MATCH`. The comparison script filters the current 1B canonical catalog to the strict 500M bound, so the same historical comparison remains reproducible. The checksum identifies the exact external reference snapshot used. This **independently corroborates the catalog against a published enumeration**; it is not a formal proof of completeness of either enumerator or a resolution of the perfect cuboid problem. Keep `references/resta_a031173.txt` excluded from Git (see `.gitignore`).
 
 ## Empirical distribution analysis (v0.11.0)
 
-`tools/analyze_brick_distribution.py` reads the canonical catalog without modifying it and reports cumulative counts, new bricks per million edge units, and local log-log exponents. The observed counts are:
+`tools/analyze_brick_distribution.py` reads the canonical catalog without modifying it and reports cumulative counts, new bricks per million edge units, and local log-log exponents. The historical v0.11.0 analysis through 500M used these counts (the current 1B catalog adds the last row):
 
 | Largest-edge bound | Cumulative primitive bricks |
 |---:|---:|
@@ -405,10 +454,11 @@ The recorded output was `MISSING_FROM_LOCAL: 0`, `EXTRA_IN_LOCAL: 0`, and `EXACT
 | 100,000,000 | 1,884 |
 | 200,000,000 | 2,509 |
 | 500,000,000 | 3,556 |
+| 1,000,000,000 | **4,631** |
 
-A descriptive power-law fit to the five cumulative counts from 10M through 200M gave `N(B) ≈ 0.73913352 × B^0.425514`. The held-out prediction at 500M was **3,717.5**, compared with **3,556** observed (relative error **+4.54%**). The final three of twelve logarithmic intervals gave local exponents **0.4069**, **0.3884**, and **0.3878**. These are finite-range empirical observations, not an established asymptotic law. Cumulative observations are dependent, and a single held-out extrapolation is not an uncertainty estimate.
+A **historical** descriptive power-law fit to the five cumulative counts from 10M through 200M gave `N(B) ≈ 0.73913352 × B^0.425514`. The held-out prediction at 500M was **3,717.5**, compared with **3,556** observed (relative error **+4.54%**). The final three of twelve logarithmic intervals gave local exponents **0.4069**, **0.3884**, and **0.3878**. The additional 500M–1B interval contains 1,075 new bricks (2.15 per million edge units), with a local log-log exponent of approximately 0.381. The historical fit was **not refitted** on the 1B data. These are finite-range empirical observations, not an established asymptotic law. Cumulative observations are dependent, and a single held-out extrapolation is not an uncertainty estimate.
 
-Reproduce the analysis:
+Reproduce the historical 500M holdout analysis (the current catalog also contains 1B data, but `--predict-at` selects the historical evaluation point):
 
 ```powershell
 python tools/analyze_brick_distribution.py `
@@ -420,10 +470,10 @@ python tools/analyze_brick_distribution.py `
 
 ## Next research steps
 
-1. **Preserve the 500M evidence:** retain the 500M Numba run log, independently validated 3,556-row catalog, manifest checksum, 200M subset check, cross-validation through 100M, and the external OEIS exact-set comparison with reference checksum. Preserve historical 200M run evidence separately.
-2. **Audit bounded completeness:** extend implementation-level review of divisor generation, numerical bounds, and candidate enumeration; distinguish finite tests from formal proofs.
-3. **Evaluate a possible 1B extension:** assess SPF memory, signed-64-bit numerical safety, runtime, and independent bounded audits before running; validate any new rows independently, preserve the 500M catalog as a subset, and record provenance before updating the canonical catalog.
-4. **Investigate arithmetic structure and growth:** analyze parity, prime-factor distributions, modular constraints, exact space-diagonal square gaps, and rolling-origin predictive comparisons of empirical growth models; distinguish proofs from finite-data observations.
+1. **Preserve the 1B evidence:** retain the 1B Numba run log, 4,631-row validated catalog, manifest checksum, and 500M subset backup. Preserve the 500M external OEIS exact-set comparison and historical 200M evidence.
+2. **Audit bounded completeness:** extend implementation-level review of divisor generation, signed-64-bit numerical bounds, and candidate enumeration; distinguish finite checks from formal proofs.
+3. **Strengthen external corroboration through 1B:** seek a published complete list of 4,631 triples for an independent exact-set comparison; until then, report only the matching published count at 1B.
+4. **Extend the distribution analysis:** add 1B as an evaluation point, compare rolling-origin power-law and log-corrected models without fitting on the test point, and investigate arithmetic structure and exact space-diagonal square gaps.
 
 ## Reproducibility and integrity
 
