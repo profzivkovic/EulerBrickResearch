@@ -172,10 +172,7 @@ def main():
     t0 = time.perf_counter()
     # Import the already-tested segmented SPF implementation from its
     # experimental directory without requiring package installation.
-    segment_dir = Path(__file__).resolve().parent.parent / 'experiments' / 'segmented_0150'
-    if str(segment_dir) not in sys.path:
-        sys.path.insert(0, str(segment_dir))
-    from segmented_factorization_0150 import odd_spf_segment, primes_upto
+    from segmented_factorization import odd_spf_segment, primes_upto
     ts = time.perf_counter()
     base_primes = np.asarray(primes_upto(math.isqrt(args.max_edge)), dtype=np.int64)
     print(f'Base primes: {len(base_primes):,}; setup: {time.perf_counter()-ts:.3f}s', flush=True)

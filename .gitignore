@@ -48,6 +48,12 @@ odd_leg_0142_*.csv
 
 odd_leg_segmented_0151_*.csv
 
+# Generated benchmark outputs
+benchmark_0152_outputs/
+benchmark_segments_0152.csv
+odd_leg_segmented_0153_*.csv
+odd_leg_original_0153_*.csv
+
 # Generated space-diagonal analysis reports
 /space_diagonal_analysis_0130.csv
 /space_diagonal_stability_0131.csv
