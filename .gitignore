@@ -36,3 +36,7 @@ candidates.csv
 Thumbs.db
 # External reference data (download locally)
 /references/resta_a031173.txt
+
+# Generated growth-model analysis reports
+/growth_model_comparison.csv
+/growth_robustness_0121.csv
