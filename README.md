@@ -533,12 +533,71 @@ python tools/compare_growth_robustness.py `
 
 The generated CSV reports are reproducible local outputs and need not be committed with the scripts. These analyses check input CSV structure and uniqueness but do not replace independent exact-arithmetic row validation or establish completeness.
 
+## Space-diagonal gap analysis (v0.13.0–v0.13.1)
+
+The read-only scripts `tools/analyze_space_diagonal.py` and `tools/analyze_space_diagonal_stability.py` examine the **4,631 primitive Euler bricks** in the current 1B catalog. For each triple, let
+
+\[
+S=a^2+b^2+c^2,\qquad k=\lfloor\sqrt{S}\rfloor,
+\]
+
+and define the exact nearest-square gap and its normalized form by
+
+\[
+\Delta=\min(S-k^2,(k+1)^2-S),\qquad
+\delta=\frac{\Delta}{2k+1}.
+\]
+
+The square comparisons use exact integer arithmetic. The normalized gap is a useful finite-range scale measure, **not** an exact equality to the distance between `sqrt(S)` and the nearest integer. A perfect cuboid would have `Delta = 0`; none occurs in this catalog.
+
+### Whole-catalog findings (v0.13.0)
+
+| Metric | Recorded result |
+|---|---:|
+| Primitive bricks analyzed | **4,631** |
+| Perfect cuboids | **0** |
+| Nearest-square gap: minimum / median / maximum | 120 / 65,927,125 / 1,366,004,675 |
+| Normalized gap: minimum / median / maximum | 0.00006476 / 0.24678356 / 0.49980462 |
+
+The ten equal-width normalized-gap bins over `[0, 0.5]` contained **506, 462, 463, 449, 471, 485, 432, 444, 454, and 465** bricks, respectively (463.1 per bin under an exactly uniform descriptive benchmark). The smallest normalized gap was recorded for **(37,835, 269,280, 1,244,484)**: `Delta = 165`, normalized gap approximately `0.0000647645`, nearest integer space diagonal `1,273,846`. This is **not** a perfect cuboid.
+
+### Stability across disjoint edge intervals (v0.13.1)
+
+Intervals are defined by `lower < c <= upper` (the first includes all positive `c`). The reference proportion below `delta = 0.05` for a uniform distribution on `[0, 0.5]` is 10%.
+
+| Largest-edge interval | Bricks | Median normalized gap | Mean normalized gap | Fraction with `delta < 0.05` | Descriptive chi-square |
+|---|---:|---:|---:|---:|---:|
+| (0, 10M] | 704 | 0.23959078 | 0.24255610 | 12.36% | 9.892 |
+| (10M, 50M] | 691 | 0.24082981 | 0.24311686 | 11.87% | 7.944 |
+| (50M, 100M] | 489 | 0.23020471 | 0.23521187 | 11.45% | 7.299 |
+| (100M, 200M] | 625 | 0.24182626 | 0.24970011 | 8.48% | 7.464 |
+| (200M, 500M] | 1,047 | 0.25664057 | 0.25139362 | 12.13% | 15.359 |
+| (500M, 1B] | 1,075 | 0.25395388 | 0.25156316 | 9.40% | 4.619 |
+
+The distributions are **approximately uniform in a descriptive sense** across the observed finite catalog, without a clear monotonic increase in near-square concentration as the largest edge grows. The chi-square numbers are descriptive diagnostics, **not significance tests**: the catalog is a deterministic arithmetic set, not a sample of independent random observations. Neither apparent uniformity nor a small positive gap establishes existence or nonexistence of a perfect cuboid. As elsewhere, arithmetic validity of the stored rows does not independently prove exhaustive enumeration through 1B.
+
+Reproduce from the repository root in PowerShell:
+
+```powershell
+python tools/analyze_space_diagonal.py `
+  --input data/verified_euler_bricks.csv `
+  --max-edge 1000000000 `
+  --output space_diagonal_analysis_0130.csv
+
+python tools/analyze_space_diagonal_stability.py `
+  --input data/verified_euler_bricks.csv `
+  --max-edge 1000000000 `
+  --output space_diagonal_stability_0131.csv
+```
+
+Both CSV reports are generated outputs and can remain local rather than being committed. These analyses do not modify the canonical catalog or manifest.
+
 ## Next research steps
 
 1. **Preserve the 1B evidence:** retain the 1B Numba run log, 4,631-row validated catalog, manifest checksum, and 500M subset backup. Preserve the 500M external OEIS exact-set comparison and historical 200M evidence.
 2. **Audit bounded completeness:** extend implementation-level review of divisor generation, signed-64-bit numerical bounds, and candidate enumeration; distinguish finite checks from formal proofs.
 3. **Strengthen external corroboration through 1B:** seek a published complete list of 4,631 triples for an independent exact-set comparison; until then, report only the matching published count at 1B.
-4. **Investigate arithmetic structure (planned v0.13.0):** analyze small-prime divisibility, edge factorization, edge ratios, and exact distances of space-diagonal squares from the nearest perfect square. Keep these observations separate from any existence or nonexistence claim.
+4. **Investigate modular and factorization structure (proposed v0.14.0):** analyze small-prime divisibility, edge factorization, edge ratios, and congruence restrictions. The v0.13.0–v0.13.1 space-diagonal gap studies are complete; do not infer a perfect cuboid from near-square observations.
 5. **Further assess growth models:** seek new independently checked bounds and genuinely prospective holdouts; the completed v0.12.0–v0.12.1 results remain descriptive and sensitive to training-window choices.
 
 ## Reproducibility and integrity
