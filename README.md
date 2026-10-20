@@ -37,6 +37,8 @@ tools/
   audit_odd_leg.py           # bounded independent audit of stable v0.9.9
   compare_oeis_resta.py      # exact-set comparison against external OEIS table
   analyze_brick_distribution.py # empirical distribution and holdout analysis
+  compare_growth_models.py    # v0.12.0 historical growth-model forecasts
+  compare_growth_robustness.py # v0.12.1 model sensitivity and increment forecasts
 data/
   verified_euler_bricks.csv  # verified systematic-search catalog
   verified_manifest.json    # bound, counts, checksum, and provenance
@@ -468,12 +470,76 @@ python tools/analyze_brick_distribution.py `
   --predict-at 500000000
 ```
 
+## Growth-model comparison and robustness (v0.12.0–v0.12.1)
+
+The read-only analysis scripts `tools/compare_growth_models.py` (v0.12.0) and `tools/compare_growth_robustness.py` (v0.12.1) use the canonical **4,631-row catalog through 1B** to compare descriptive models for the cumulative number of primitive Euler bricks with largest edge at most \(B\):
+
+\[
+N(B)=CB^\alpha,\qquad
+N(B)=CB^\alpha\log B,\qquad
+N(B)=CB^\alpha(\log B)^\beta.
+\]
+
+The second model fixes the logarithmic exponent to \(\beta=1\); the third estimates \(\beta\) from the training data. Historical holdout tests train on bounds no larger than 50M, 100M, 200M, or 500M and predict counts at larger bounds (100M, 200M, 500M, or 1B). The 200M-trained models are also evaluated at 1B. Neither script changes the catalog.
+
+### Historical holdout forecasts (v0.12.0)
+
+The signed percentage errors below are \(100(\widehat N-N)/N\), so positive values mean overprediction. This initial experiment compared the ordinary power law against the model with a *free* logarithmic exponent, with the lower training cutoff fixed at 1M.
+
+| Training upper bound | Prediction bound | Power-law error | Free-log error |
+|---:|---:|---:|---:|
+| 50M | 100M | +3.32% | −2.62% |
+| 100M | 200M | +4.00% | −1.46% |
+| 200M | 500M | +8.12% | +1.23% |
+| 200M | 1B | +12.65% | +1.95% |
+| 500M | 1B | +8.77% | +0.80% |
+
+Across these five **overlapping** tests, the mean absolute cumulative forecast error was **7.37%** for the power law and **1.61%** for the free-log model. This apparent advantage motivated a sensitivity analysis; it is not an independent statistical validation.
+
+### Training-window sensitivity and interval increments (v0.12.1)
+
+The robustness analysis varies the **lower** training cutoff and compares all three models. `MAE_N` is the mean absolute percentage error in cumulative counts. `MAE_dN` evaluates the predicted number of **new** bricks between the training upper bound and the target bound, calculated as the difference of fitted cumulative predictions, not as a separately fitted interval model.
+
+| Lower training cutoff | Number of tests | Power MAE_N | Fixed-log MAE_N | Free-log MAE_N | Power MAE_dN | Fixed-log MAE_dN | Free-log MAE_dN |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1M | 5 | 7.37% | 5.65% | **1.61%** | 17.09% | 13.11% | **5.05%** |
+| 2M | 5 | 5.92% | 4.59% | **1.75%** | 14.27% | 11.06% | **5.63%** |
+| 5M | 5 | 3.58% | **2.90%** | 3.45% | 9.92% | **8.08%** | 9.40% |
+| 10M | 4 | 4.44% | 3.61% | **3.50%** | 12.06% | 9.91% | **9.58%** |
+
+The **fixed-log model improved on the plain power law for every tested lower cutoff**, for both cumulative and increment errors. The free-log model performed especially well when 1M or 2M observations were included, but was sensitive to the training window. For example, with training ending at 200M, the fitted free-log parameters changed from \(\alpha=0.1918,\beta=4.0658\) (starting at 1M) to \(\alpha=0.4587,\beta=-0.5971\) (starting at 5M). Even the sign of \(\beta\) changed.
+
+For a free-log fit, the local effective slope is
+
+\[
+\frac{d\log N(B)}{d\log B}=\alpha+\frac{\beta}{\log B}.
+\]
+
+This can describe a decreasing local slope over the measured range without identifying a stable asymptotic exponent. **These results support finite-range descriptive and forecasting utility, not a proven asymptotic law or statistically significant superiority.** Cumulative counts are dependent; the rolling tests share training data and targets; the number of evaluation points is small; and no full independent exact-set verification has been performed at 1B.
+
+Reproduce the analyses from the repository root:
+
+```powershell
+python tools/compare_growth_models.py `
+  --input data/verified_euler_bricks.csv `
+  --catalog-bound 1000000000 `
+  --output growth_model_comparison.csv
+
+python tools/compare_growth_robustness.py `
+  --input data/verified_euler_bricks.csv `
+  --catalog-bound 1000000000 `
+  --output growth_robustness_0121.csv
+```
+
+The generated CSV reports are reproducible local outputs and need not be committed with the scripts. These analyses check input CSV structure and uniqueness but do not replace independent exact-arithmetic row validation or establish completeness.
+
 ## Next research steps
 
 1. **Preserve the 1B evidence:** retain the 1B Numba run log, 4,631-row validated catalog, manifest checksum, and 500M subset backup. Preserve the 500M external OEIS exact-set comparison and historical 200M evidence.
 2. **Audit bounded completeness:** extend implementation-level review of divisor generation, signed-64-bit numerical bounds, and candidate enumeration; distinguish finite checks from formal proofs.
 3. **Strengthen external corroboration through 1B:** seek a published complete list of 4,631 triples for an independent exact-set comparison; until then, report only the matching published count at 1B.
-4. **Extend the distribution analysis:** add 1B as an evaluation point, compare rolling-origin power-law and log-corrected models without fitting on the test point, and investigate arithmetic structure and exact space-diagonal square gaps.
+4. **Investigate arithmetic structure (planned v0.13.0):** analyze small-prime divisibility, edge factorization, edge ratios, and exact distances of space-diagonal squares from the nearest perfect square. Keep these observations separate from any existence or nonexistence claim.
+5. **Further assess growth models:** seek new independently checked bounds and genuinely prospective holdouts; the completed v0.12.0–v0.12.1 results remain descriptive and sensitive to training-window choices.
 
 ## Reproducibility and integrity
 
