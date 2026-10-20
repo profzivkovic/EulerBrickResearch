@@ -46,6 +46,8 @@ odd_leg_profile_0140_*.csv
 odd_leg_0141_*.csv
 odd_leg_0142_*.csv
 
+odd_leg_segmented_0151_*.csv
+
 # Generated space-diagonal analysis reports
 /space_diagonal_analysis_0130.csv
 /space_diagonal_stability_0131.csv
