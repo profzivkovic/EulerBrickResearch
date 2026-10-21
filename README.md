@@ -2,7 +2,7 @@
 
 Reproducible, exact-integer research into **Euler bricks** and the **perfect cuboid problem**, using exact integer arithmetic in Python, with NumPy/Numba-accelerated global-SPF and segmented-SPF odd-leg engines.
 
-**Project status:** historical segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, independently cross-checked through **100,000,000** and extended with exact row validation through **200,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**; experimental fused Numba odd-leg engine **v0.10.4**, regression-tested through **200,000,000** and extended through **1,000,000,000** with independent exact-arithmetic row validation. Two active accelerated odd-leg variants are maintained: global-SPF `src/odd_leg_numba.py` (v0.10.4) and memory-oriented segmented-SPF `src/odd_leg_numba_segmented.py` (v0.17.0), extended through 2B after audited signed-64-bit safety and regression tests through 500M. The 500M memory measurement belongs to v0.16.0, not v0.17.0. The prior v0.15.1 results are retained as historical benchmarks. The verified catalog contains **6,023 primitive Euler bricks** through 2B (1,392 additional bricks beyond 1B). An exact-set comparison with Giovanni Resta's published OEIS table independently corroborates **all 3,556 triples** for largest edge strictly below 500M; the 1B result additionally matches the published total count of 4,631, but a full independent triple-by-triple comparison through 1B has not been performed.
+**Project status:** historical segmented systematic search **v0.7.2**, exercised through a maximum edge of **100,000,000**; stable independent odd-leg search **v0.9.9**, independently cross-checked through **100,000,000** and extended with exact row validation through **200,000,000**; completed experimental swarm-optimization phase **v0.8.0–v0.8.2**; experimental fused Numba odd-leg engine **v0.10.4**, regression-tested through **200,000,000** and extended through **1,000,000,000** with independent exact-arithmetic row validation. Two active accelerated odd-leg variants are maintained: global-SPF `src/odd_leg_numba.py` (v0.10.4) and memory-oriented segmented-SPF `src/odd_leg_numba_segmented.py` (v0.18.0), using segment-level Numba dispatch and regression-tested through 2B within the signed-64-bit bound audited for v0.17.0. The instrumented 500M memory measurement belongs to v0.16.0; no instrumented total-memory peak is claimed for v0.17.0 or v0.18.0. The prior v0.15.1 results are retained as historical benchmarks. The verified catalog contains **6,023 primitive Euler bricks** through 2B (1,392 additional bricks beyond 1B). An exact-set comparison with Giovanni Resta's published OEIS table independently corroborates **all 3,556 triples** for largest edge strictly below 500M; the 1B result additionally matches the published total count of 4,631, but a full independent triple-by-triple comparison through 1B has not been performed.
 
 > **Scientific scope:** No perfect cuboid was found in the finite searches and experiments reported here. This is **not a proof of nonexistence**. Exact validation certifies the arithmetic properties of reported rows, but does not by itself establish that a search implementation has found every solution within its bound. Heuristic experiments make no completeness claim.
 
@@ -28,8 +28,8 @@ Final square tests use exact integer arithmetic (`math.isqrt`); floating-point f
 src/
   odd_leg_search.py             # stable independent odd-leg search, v0.9.9
   odd_leg_numba.py              # active global-SPF Numba search, v0.10.4
-  odd_leg_numba_segmented.py    # active segmented-SPF Numba search, v0.17.0
-  segmented_factorization.py    # active SPF segment construction used by v0.17.0
+  odd_leg_numba_segmented.py    # active segmented-SPF Numba search, v0.18.0
+  segmented_factorization.py    # active SPF segment construction used by v0.18.0
   pso_search.py                 # PSO, v0.8.1
   aco_search.py                 # ACO, v0.8.2
 tools/
@@ -59,7 +59,8 @@ archive/
   v0.14.1/                     # archived modular-filter experiment
   v0.15.0/                     # original segmented-factorization prototype
   v0.16.0/                     # preserved final v0.16.0 segmented engine
-  v0.17.0/                     # identical copy of active v0.17.0 engine
+  v0.17.0/                     # preserved stable v0.17.0 engine
+  v0.18.0/                     # identical copy of active v0.18.0 engine
 ```
 
 Local generated search outputs belong in ignored `local_results/`; local catalog snapshots belong in ignored `backups/`. Only `data/verified_euler_bricks.csv` and `data/verified_manifest.json` are the current canonical data artifacts. The directory tree lists principal files, not every utility. Active programs use unversioned filenames; their algorithm versions are recorded in code and documentation. Completed prototypes are preserved in versioned `archive/` directories. The v0.8.0 PSO **results** are committed, but `src/pso_search.py` contains the later v0.8.1 implementation. Full source-level reproduction of v0.8.0 requires its original script, which is not represented by the current PSO source.
@@ -119,7 +120,7 @@ python tools/validate_bricks.py `
 
 The subset bound above illustrates a **historical 50M-to-100M upgrade**. The current verified catalog is now at 2B; do not rerun this historical upgrade against the current catalog. For future updates, use the actual catalog bound recorded in `data/verified_manifest.json`. The validator checks sorted positive edges, bound, primitivity, all three integer face diagonals, uniqueness, and any supplied CSV metadata (including the space-diagonal tests and normalized gap).
 
-Historical example only (do not run against the current 1B catalog):
+Historical example only (do not run against the current 2B catalog):
 
 ```powershell
 python tools/update_verified_catalog.py `
@@ -371,7 +372,7 @@ python -u src/odd_leg_numba.py `
   --progress-every 10000000
 ```
 
-Validate the raw output against a preserved 500M catalog (not against the current 1B catalog as a subset):
+Validate the raw output against a preserved 500M catalog (not against the current 2B catalog as a subset):
 
 ```powershell
 python tools/validate_bricks.py `
@@ -394,7 +395,7 @@ python src/odd_leg_numba.py `
   --output odd_leg_numba_104_200m.csv
 ```
 
-Expected result: 2,509 primitive bricks and zero perfect cuboids. **Do not use the current 1B catalog as `--reference` for this 200M run:** the reference comparison requires the same bound and will reject the additional catalog rows. To reproduce the historical `EXACT SET MATCH`, use a separately preserved 200M reference CSV. The SPF array alone occupies approximately 800 MB at 200M; total process memory is higher. The program currently restricts `--max-edge` to at most 1,000,000,000 for signed-64-bit arithmetic, and the 1B run completed successfully; adequate available RAM is still required for reproduction.
+Expected result: 2,509 primitive bricks and zero perfect cuboids. **Do not use the current 2B catalog as `--reference` for this 200M run:** the reference comparison requires the same bound and will reject the additional catalog rows. To reproduce the historical `EXACT SET MATCH`, use a separately preserved 200M reference CSV. The SPF array alone occupies approximately 800 MB at 200M; total process memory is higher. The program currently restricts `--max-edge` to at most 1,000,000,000 for signed-64-bit arithmetic, and the 1B run completed successfully; adequate available RAM is still required for reproduction.
 
 ### Bounded audit of the stable odd-leg engine
 
@@ -407,7 +408,7 @@ python tools/audit_odd_leg.py --source src/odd_leg_search.py --max-edge 3000 --s
 
 These are finite bounded checks, **not** formal proofs. This audit directly targets v0.9.9, not the Numba kernel. The latter is checked against the reference catalog and by the stable engine's exact candidate verifier.
 
-## Segmented-SPF accelerated odd-leg search (v0.15.0–v0.17.0)
+## Segmented-SPF accelerated odd-leg search (v0.15.0–v0.18.0)
 
 Two accelerated implementations remain **active in parallel**. `src/odd_leg_numba.py` uses a global smallest-prime-factor (SPF) table and prioritizes speed when sufficient RAM is available. `src/odd_leg_numba_segmented.py` uses bounded SPF segments and prioritizes memory efficiency at larger search limits. Neither supersedes the other. The segmented search imports `odd_spf_segment` and `primes_upto` from the active `src/segmented_factorization.py`, **not** from the archived v0.15.0 prototype.
 
@@ -419,7 +420,7 @@ Two accelerated implementations remain **active in parallel**. `src/odd_leg_numb
 - **v0.15.1:** integrated segmented SPF with a fused Numba search kernel. Full **EXACT SET MATCH** against the verified catalog at 10M (704 bricks), 100M (1,884 bricks), and 500M (3,556 bricks), with zero missing and zero extra rows. All three bounds reported zero perfect cuboids.
 - **v0.15.2:** compared segment sizes of 25,000, 100,000, and 400,000 odd values at 10M (two runs each). Search-time medians were 14.1095 s, 14.265 s, and 14.2275 s respectively, with exact-set agreement in all runs. No meaningful speed advantage was established; the default remains 100,000 odd values.
 - **v0.15.3:** measured memory with a process-tree sampler on Windows, using the same 100,000-odd segment size. The memory tool remains active under `tools/measure_memory.py`. Completed global-SPF versus segmented-SPF measurements now cover 10M, 100M, and 500M.
-- **v0.16.0 (2026-10-20, active):** uses the smallest prime factor from the segment immediately when factoring each odd value, avoiding redundant trial division by smaller primes. Exact-set regression succeeded at 10M (704 bricks), 100M (1,884), and twice at 500M (3,556). All runs found zero perfect cuboids and matched the catalog with zero missing/extra rows. The 500M candidate counters were identical to v0.15.1. A Windows process-tree memory measurement also completed successfully. The tested prototype was promoted to the active `src/odd_leg_numba_segmented.py` with only version/display-label and import-comment changes; a post-promotion regression should be run before committing.
+- **v0.16.0 (2026-10-20, historical):** uses the smallest prime factor from the segment immediately when factoring each odd value, avoiding redundant trial division by smaller primes. Exact-set regression succeeded at 10M (704 bricks), 100M (1,884), and twice at 500M (3,556). All runs found zero perfect cuboids and matched the catalog with zero missing/extra rows. The 500M candidate counters were identical to v0.15.1. A Windows process-tree memory measurement also completed successfully. The tested prototype was promoted to the active source at the time; its final version is now preserved in `archive/v0.16.0/`.
 
 ### Recorded segmented-SPF results
 
@@ -577,6 +578,42 @@ python tools/validate_bricks.py `
 
 The catalog and manifest **were updated and validated**: previous=4,631, added=1,392, total=6,023; perfect cuboids=0. The canonical catalog SHA-256 reported by the updater is `e06394157055c226ff0074dbb246b9888a34b1293c5c284673fe14ecd33d42ab`. The former 1B catalog and manifest were preserved in local `backups/`. The 2B result is a validated bounded computational search, not a formal completeness proof.
 
+### v0.18.0: segment-level Numba dispatch (2026-10-21)
+
+The active v0.18.0 engine keeps the v0.17.0 odd-leg factorization, modulo-3 partition, primitivity filtering, and exact square tests. The main optimization moves the iteration over odd values into a Numba-compiled **segment-level wrapper** (`fused_segment_kernel`), reducing Python-to-Numba calls from one per odd value to one per SPF segment in normal search mode. The default segment size remains **100,000 odd values**. The optional `--progress-every` mode retains the historical per-odd dispatch and progress output; its timing and kernel-call counts are **not comparable** to the optimized default mode.
+
+The v0.17.0 signed-64-bit safety audit still defines the supported upper bound: **2,000,000,000**, with `--confirm-2b` required above 1B. v0.18.0 does not extend that bound. The source is maintained at `src/odd_leg_numba_segmented.py`, with a byte-identical archived copy at `archive/v0.18.0/odd_leg_numba_segmented.py` (SHA-256 equality checked during promotion). The prior v0.17.0 source remains archived.
+
+#### Recorded results and comparison with v0.17.0
+
+| Maximum edge | Primitive bricks | v0.17.0 search | v0.18.0 search | Search-time reduction | v0.18.0 total elapsed | Exact-set comparison |
+|---:|---:|---:|---:|---:|---:|---|
+| 10M | 704 | 13.575 s | **9.300 s** | **31.5%** | 10.981 s | EXACT SET MATCH |
+| 100M | 1,884 | 156.907 s | **118.065 s*** | **24.8%*** | — | EXACT SET MATCH |
+| 500M | 3,556 | 1,376.382 s | **703.406 s** | **48.9%** | 703.573 s | EXACT SET MATCH |
+| **2B** | **6,023** | **6,423.759 s** | **3,373.770 s** | **47.5%** | **3,374.145 s** | **EXACT SET MATCH** |
+
+*At 100M, the v0.18.0 search figure is the arithmetic mean of three repeated/profiled runs (116.129 s, 115.855 s, and 122.210 s), excluding an earlier 176.057 s run that showed substantial timing variability. That outlying run also passed exact-set regression. The 100M comparison is therefore a descriptive, non-paired measurement rather than a controlled speedup estimate. Other comparisons are recorded runs under potentially differing system loads. The 10M final-regression total includes 1.665 s Numba compilation; the 500M and 2B totals include cached compilation.*
+
+At **2B**, the completed v0.18.0 run reported **15,965,415,902 primitive candidate pairs**, **22,935,147,525 rejected nonprimitive pairs**, **10,000 segments**, **10,000 fused segment-kernel calls**, **210.666 s SPF segment construction**, and **3,162.985 s fused kernel time**. It found **zero perfect cuboids**. The reference comparison against the canonical 2B catalog reported `REFERENCE expected=6023 missing=0 extra=0` and `EXACT SET MATCH`. The same candidate-pair and rejection counters were recorded in v0.17.0. At 500M, the counters were 3,237,540,952 and 4,346,788,291, respectively, also with exact-set agreement.
+
+The final 10M regression after removing temporary profiling reported **704 bricks**, **33,697,155 primitive candidate pairs**, **35,829,819 rejected nonprimitive pairs**, **50 segment-kernel calls**, and `EXACT SET MATCH`. A separate 10,000-edge `--progress-every 1000` smoke test exercised the per-odd progress path, found **19 bricks** and zero perfect cuboids, and completed successfully; this small smoke test did not request a reference comparison. Segment-size experiments at 10M (25,000, 100,000 and 400,000 odd values) showed no meaningful difference in single-run timings, so the default was retained.
+
+**Memory evidence:** at the default segment size, the SPF `uint32` array uses at most **400,000 bytes per segment**, excluding allocation overhead. This is **not a total process-memory bound**: Numba-generated match lists, other arrays, and runtime overhead also consume memory. No instrumented peak RAM measurement was made for v0.18.0 at 2B; the run completed without significant memory problems being observed. Do not transfer the measured v0.16.0 500M peak to v0.18.0.
+
+Reproduce the optimized 2B run from the repository root in PowerShell (this is a long-running search):
+
+```powershell
+python -u src/odd_leg_numba_segmented.py `
+  --max-edge 2000000000 `
+  --confirm-2b `
+  --source src/odd_leg_search.py `
+  --reference data/verified_euler_bricks.csv `
+  --output local_results/v0180_final_2b.csv
+```
+
+The `--reference` check compares the generated set with the matching bound-filtered catalog and is a **regression check, not independent proof of complete enumeration**. The canonical catalog and its SHA-256 manifest were **not changed** by the v0.18.0 optimization. No perfect cuboid was found within the tested bound; this is not a proof of nonexistence.
+
 ## Independent published-catalog comparison (500M)
 
 On 2026-10-19 (UTC), the local verified catalog was compared, **triple by triple**, with Giovanni Resta's table linked from [OEIS A031173](https://oeis.org/A031173). The comparison used the **strict** bound `c < 500000000` (largest edge), whereas the search engine accepts an inclusive maximum edge. All 3,556 local rows and all 3,556 reference rows were below the strict bound; hence no boundary discrepancy occurred.
@@ -616,11 +653,11 @@ python tools/compare_oeis_resta.py `
   --max-edge 500000000
 ```
 
-The recorded 500M comparison output was `MISSING_FROM_LOCAL: 0`, `EXTRA_IN_LOCAL: 0`, and `EXACT SET MATCH`. The comparison script filters the current 1B canonical catalog to the strict 500M bound, so the same historical comparison remains reproducible. The checksum identifies the exact external reference snapshot used. This **independently corroborates the catalog against a published enumeration**; it is not a formal proof of completeness of either enumerator or a resolution of the perfect cuboid problem. Keep `references/resta_a031173.txt` excluded from Git (see `.gitignore`).
+The recorded 500M comparison output was `MISSING_FROM_LOCAL: 0`, `EXTRA_IN_LOCAL: 0`, and `EXACT SET MATCH`. The comparison script filters the current 2B canonical catalog to the strict 500M bound, so the same historical comparison remains reproducible. The checksum identifies the exact external reference snapshot used. This **independently corroborates the catalog against a published enumeration**; it is not a formal proof of completeness of either enumerator or a resolution of the perfect cuboid problem. Keep `references/resta_a031173.txt` excluded from Git (see `.gitignore`).
 
 ## Empirical distribution analysis (v0.11.0)
 
-`tools/analyze_brick_distribution.py` reads the canonical catalog without modifying it and reports cumulative counts, new bricks per million edge units, and local log-log exponents. The historical v0.11.0 analysis through 500M used these counts (the current 1B catalog adds the last row):
+`tools/analyze_brick_distribution.py` reads the canonical catalog without modifying it and reports cumulative counts, new bricks per million edge units, and local log-log exponents. The historical v0.11.0 analysis through 500M used these counts (the current 2B catalog contains later bounds; the table stops at 1B):
 
 | Largest-edge bound | Cumulative primitive bricks |
 |---:|---:|
@@ -709,7 +746,7 @@ The generated CSV reports are reproducible local outputs and need not be committ
 
 ## Space-diagonal gap analysis (v0.13.0–v0.13.1)
 
-The read-only scripts `tools/analyze_space_diagonal.py` and `tools/analyze_space_diagonal_stability.py` examine the **4,631 primitive Euler bricks** in the current 1B catalog. For each triple, let
+The read-only scripts `tools/analyze_space_diagonal.py` and `tools/analyze_space_diagonal_stability.py` examine the **4,631 primitive Euler bricks** in the historical 1B subset of the current 2B catalog. For each triple, let
 
 \[
 S=a^2+b^2+c^2,\qquad k=\lfloor\sqrt{S}\rfloor,
@@ -771,8 +808,8 @@ Both CSV reports are generated outputs and can remain local rather than being co
 1. **Preserve the 1B and 2B evidence:** retain the validated 6,023-row 2B catalog and manifest checksum, a backup of the prior 4,631-row 1B catalog, and independent 500M OEIS exact-set comparison.
 2. **Audit bounded completeness:** review divisor generation, candidate enumeration, numerical bounds, and implementation-level assumptions. Distinguish bounded checks from formal proofs.
 3. **Strengthen independent corroboration at 1B:** seek a published full triple list for exact-set comparison; currently only the published count is matched at 1B.
-4. **Maintain v0.17.0 release evidence:** keep final v0.16.0 in `archive/v0.16.0/`, keep a byte-identical copy of active v0.17.0 in `archive/v0.17.0/`, retain the three-phase integer-safety audit in `tools/audits/int64_v0170/`, and commit source, catalog, manifest and README together. Profile kernel cost and test parallelism with exact-set regressions.
-5. **Extend bounds only after numerical-safety review:** segmented v0.17.0 is audited through 2B; global-SPF v0.10.4 remains limited to 1B. A 10B extension requires new overflow-safe arithmetic. Prioritize checkpoint/resume for long Windows/Colab experiments and benchmark parallel workers. Do not assume constant total memory use.
+4. **Maintain v0.18.0 release evidence:** preserve the v0.16.0 and v0.17.0 historical sources in their versioned archives, retain the three-phase signed-64-bit audit in `tools/audits/int64_v0170/`, and keep the active v0.18.0 source byte-identical to `archive/v0.18.0/odd_leg_numba_segmented.py`. Commit the source, archive, and README after final checks; leave the unchanged 2B catalog and manifest intact. Consider instrumented RAM measurements and further kernel profiling in future work.
+5. **Extend bounds only after numerical-safety review:** segmented v0.18.0 retains the v0.17.0 audited 2B bound; global-SPF v0.10.4 remains limited to 1B. A 10B extension requires new overflow-safe arithmetic. Prioritize checkpoint/resume for long Windows/Colab experiments and benchmark parallel workers. Do not assume constant total memory use.
 6. **Maintain research separation:** keep metaheuristic results in `experiments/metaheuristics/`, completed algorithm prototypes in `archive/`, and current code in `src/` and `tools/` without version suffixes. The v0.11–v0.13 distribution, growth-model, and space-diagonal analyses are completed historical studies.
 
 ## Reproducibility and integrity

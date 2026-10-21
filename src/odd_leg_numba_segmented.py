@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""EulerBrickResearch v0.17.0: audited 2B segmented-SPF search.
-Preserves v0.16.0 algorithm; raises only the experimental int64 bound.
-Validated through 2B; promoted after bounded regression checks.
-Does not modify stable source or verified catalog.
+"""EulerBrickResearch v0.18.0: segment-level Numba dispatch.
+Preserves the v0.17.0 mathematics and audited int64 bound.
+Runs above 1B require explicit --confirm-2b acknowledgement.
+Does not modify the verified catalog.
 """
 import argparse
 import csv
@@ -15,7 +15,7 @@ from pathlib import Path
 import numpy as np
 from numba import njit
 
-MAX_SAFE_BOUND = 2_000_000_000  # experimental: 2*B**2 <= 8e18 < int64 max; three squares in Python
+MAX_SAFE_BOUND = 2_000_000_000  # audited through 2B: pair sums fit int64; three-square tests use Python ints
 
 
 @njit(cache=True)
@@ -148,6 +148,23 @@ def fused_odd_kernel(odd, bound, spf, segment_lo, base_primes):
     return matches, tested, rejected
 
 
+@njit(cache=True)
+def fused_segment_kernel(lo, hi, bound, spf, base_primes):
+    """Run the unchanged per-odd kernel inside one Numba segment call."""
+    all_matches = []
+    tested_total = 0
+    rejected_total = 0
+    for odd in range(lo, hi + 1, 2):
+        pairs, tested, rejected = fused_odd_kernel(
+            odd, bound, spf, lo, base_primes
+        )
+        tested_total += tested
+        rejected_total += rejected
+        for e1, e2 in pairs:
+            all_matches.append((odd, e1, e2))
+    return all_matches, tested_total, rejected_total
+
+
 def load_stable(path):
     spec = importlib.util.spec_from_file_location('stable_odd_leg_v099', path)
     if spec is None or spec.loader is None:
@@ -184,11 +201,10 @@ def main():
     if args.reference and args.output.resolve() == args.reference.resolve():
         parser.error('--output must not overwrite the reference catalog')
     stable = load_stable(args.source)
-    print('ODD-LEG segmented v0.17.0 / audited 2B bound', flush=True)
+    print('ODD-LEG segmented v0.18.0 / audited 2B bound', flush=True)
     print(f'Bound={args.max_edge:,}; stable source={args.source}', flush=True)
     t0 = time.perf_counter()
-    # Import the already-tested segmented SPF implementation from its
-    # experimental directory without requiring package installation.
+    # Import the already-tested segmented SPF implementation from the active src directory without requiring package installation.
     from segmented_factorization import odd_spf_segment, primes_upto
     ts = time.perf_counter()
     base_primes = np.asarray(primes_upto(math.isqrt(args.max_edge)), dtype=np.int64)
@@ -196,7 +212,7 @@ def main():
     # Compile with a real SPF segment containing odd=3.
     warm_spf = np.asarray(odd_spf_segment(3, 101, base_primes), dtype=np.uint32)
     tc = time.perf_counter()
-    fused_odd_kernel(3, 100, warm_spf, 3, base_primes)
+    fused_segment_kernel(3, 101, 100, warm_spf, base_primes)
     print(f'Numba compilation: {time.perf_counter()-tc:.3f}s', flush=True)
 
     bricks = set()
@@ -213,29 +229,55 @@ def main():
         spf_view = np.asarray(odd_spf_segment(lo, hi, base_primes), dtype=np.uint32)
         segment_seconds += time.perf_counter() - ts
         segments += 1
-        for odd in range(lo, hi + 1, 2):
+        if args.progress_every:
+            # Preserve v0.17.0's exact odd-level progress semantics.
+            # Progress-enabled runs intentionally use the original per-odd
+            # dispatch; normal benchmark runs use the segment-level kernel.
+            for odd in range(lo, hi + 1, 2):
+                t = time.perf_counter()
+                pairs, tested, rejected = fused_odd_kernel(
+                    odd, args.max_edge, spf_view, lo, base_primes
+                )
+                kernel_seconds += time.perf_counter() - t
+                kernel_calls += 1
+                tested_total += tested
+                rejected_total += rejected
+                if pairs:
+                    t = time.perf_counter()
+                    for e1, e2 in pairs:
+                        triple = tuple(sorted((int(odd), int(e1), int(e2))))
+                        if not stable.verify_brick(triple, args.max_edge):
+                            raise AssertionError(f'Invalid Numba candidate: {triple}')
+                        bricks.add(triple)
+                    verification_seconds += time.perf_counter() - t
+                if odd % args.progress_every == 1:
+                    print(f'odd={odd:,}; bricks={len(bricks)}', flush=True)
+        else:
             t = time.perf_counter()
-            pairs, tested, rejected = fused_odd_kernel(odd, args.max_edge, spf_view, lo, base_primes)
+            matches, tested, rejected = fused_segment_kernel(
+                lo, hi, args.max_edge, spf_view, base_primes
+            )
             kernel_seconds += time.perf_counter() - t
             kernel_calls += 1
             tested_total += tested
             rejected_total += rejected
-            if pairs:
+            if matches:
                 t = time.perf_counter()
-                for e1, e2 in pairs:
+                for odd, e1, e2 in matches:
                     triple = tuple(sorted((int(odd), int(e1), int(e2))))
                     if not stable.verify_brick(triple, args.max_edge):
                         raise AssertionError(f'Invalid Numba candidate: {triple}')
                     bricks.add(triple)
                 verification_seconds += time.perf_counter() - t
-            if args.progress_every and odd % args.progress_every == 1:
-                print(f'odd={odd:,}; bricks={len(bricks)}', flush=True)
 
     search_seconds = time.perf_counter() - tsearch
     print(f'Search time: {search_seconds:.3f}s', flush=True)
     print(f'Segment construction: {segment_seconds:.3f}s; segments={segments:,}')
     print(f'Segment SPF peak allocation: <= {4*args.segment_odds:,} bytes (excluding overhead)')
+    print('Memory note: SPF bound excludes Numba match lists, arrays, and runtime overhead.')
     print(f'Fused Numba kernel: {kernel_seconds:.3f}s; calls={kernel_calls:,}')
+    if args.progress_every:
+        print('Progress mode: original per-odd dispatch (not a segment benchmark).')
     print(f'Candidate verification: {verification_seconds:.3f}s')
     print('Timing categories exclude Python loop/accounting overhead.')
     print(f'Primitive Euler bricks: {len(bricks)}')
