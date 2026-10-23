@@ -63,3 +63,6 @@ odd_leg_original_0153_*.csv
 /project_files.txt
 /git_tracked.txt
 /git_status.txt
+
+# Local search checkpoints
+/checkpoints/
