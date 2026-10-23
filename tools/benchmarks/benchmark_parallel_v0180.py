@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Experimental process-parallel benchmark of unchanged v0.18.0 Numba kernels.
-Run from repository root: python tools/benchmark_parallel_v0180.py --max-edge 10000000 --workers 1 2 4
+Run from repository root: python tools/benchmarks/benchmark_parallel_v0180.py --max-edge 10000000 --workers 1 2 4
 No canonical files are modified. Uses Windows-safe spawn multiprocessing.
 """
 import argparse

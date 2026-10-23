@@ -2,7 +2,7 @@
 """Resumable process-parallel v0.18.0 search; no canonical files modified.
 
 Example (repository root):
- python tools/checkpoint_parallel_v0180.py --max-edge 100000000 --workers 4 --checkpoint-dir checkpoints/test_100m --reference data/verified_euler_bricks.csv
+ python tools/runners/checkpoint_parallel_v0180.py --max-edge 100000000 --workers 4 --checkpoint-dir checkpoints/test_100m --reference data/verified_euler_bricks.csv
 Resume by running the identical command again. --stop-after-chunks 3 simulates interruption.
 """
 import argparse
@@ -14,6 +14,12 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 import sys
 import time
+
+import sys
+from pathlib import Path
+
+BENCHMARKS_DIR = Path(__file__).resolve().parents[1] / "benchmarks"
+sys.path.insert(0, str(BENCHMARKS_DIR))
 
 # Reuse exactly the existing benchmark's worker implementation.
 import benchmark_parallel_v0180 as engine

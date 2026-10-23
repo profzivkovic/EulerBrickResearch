@@ -88,7 +88,7 @@ def main():
     p.add_argument('--drive-dir', type=Path, required=True)
     p.add_argument('--reference', type=Path, default=Path('data/verified_euler_bricks.csv'))
     p.add_argument('--src-dir', type=Path, default=Path('src'))
-    p.add_argument('--runner', type=Path, default=Path('tools/checkpoint_parallel_v0180.py'))
+    p.add_argument('--runner', type=Path, default=Path('tools/runners/checkpoint_parallel_v0180.py'))
     p.add_argument('--segment-odds', type=int, default=100000)
     p.add_argument('--chunk-segments', type=int, default=10)
     p.add_argument('--sync-seconds', type=float, default=2.0)

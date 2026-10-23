@@ -111,7 +111,7 @@ See `python archive/v0.7.2/segmented_search.py --help` for all options. The hist
 Historical example: validate a 100M output against a prior 50M catalog:
 
 ```powershell
-python tools/validate_bricks.py `
+python tools/audits/validate_bricks.py `
   --input bricks_100m.csv `
   --max-edge 100000000 `
   --subset data/verified_euler_bricks.csv `
@@ -123,7 +123,7 @@ The subset bound above illustrates a **historical 50M-to-100M upgrade**. The cur
 Historical example only (do not run against the current 2B catalog):
 
 ```powershell
-python tools/update_verified_catalog.py `
+python tools/catalog/update_verified_catalog.py `
   --input bricks_100m.csv `
   --max-edge 100000000 `
   --catalog data/verified_euler_bricks.csv `
@@ -135,7 +135,7 @@ The updater independently checks every incoming triple, validates the existing c
 Validate the current 2B catalog:
 
 ```powershell
-python tools/validate_bricks.py `
+python tools/audits/validate_bricks.py `
   --input data/verified_euler_bricks.csv `
   --max-edge 2000000000
 ```
@@ -375,7 +375,7 @@ python -u src/odd_leg_numba.py `
 Validate the raw output against a preserved 500M catalog (not against the current 2B catalog as a subset):
 
 ```powershell
-python tools/validate_bricks.py `
+python tools/audits/validate_bricks.py `
   --input odd_leg_numba_104_1b.csv `
   --max-edge 1000000000 `
   --subset backups/verified_euler_bricks_500m.csv `
@@ -538,7 +538,7 @@ Reproduce the 500M comparison with process-tree memory sampling (run sequentiall
 
 The global run requires several GiB of RAM. The reference option on the segmented run compares against the 500M subset of the current 2B catalog. The two generated output files are separate local artifacts, not replacements for the canonical catalog.
 
-Use `tools/benchmark_segments.py` for segment-size comparisons. Generated benchmark CSVs and run outputs are local artifacts, separate from the canonical verified catalog. Neither a finite exact-set match nor the absence of perfect cuboids resolves the perfect cuboid problem.
+Use `tools/benchmarks/benchmark_segments.py` for segment-size comparisons. Generated benchmark CSVs and run outputs are local artifacts, separate from the canonical verified catalog. Neither a finite exact-set match nor the absence of perfect cuboids resolves the perfect cuboid problem.
 
 ### v0.17.0: audited 2B extension (2026-10-20 UTC)
 
@@ -553,7 +553,7 @@ The promoted v0.17.0 segmented-SPF engine preserves the v0.16.0 enumeration algo
 
 The 10M, 100M and 500M v0.17.0 prototype runs returned `EXACT SET MATCH` against the existing catalog subsets, with no missing or extra triples. The 2B run used 10,000 SPF segments, 999,999,999 kernel calls, 303.454 s segment construction, and 5,758.004 s fused kernel time. Its SPF **segment allocation** was at most 400,000 bytes per segment (excluding overhead); **total process memory was not independently sampled for v0.17.0**. The earlier v0.16.0 sampled 500M peak was 99.14 MiB; it must not be reported as a v0.17.0 measurement. The v0.17.0 500M time was slower than the previously recorded v0.16.0 run, but these are not controlled paired benchmarks.
 
-The existing `tools/validate_bricks.py` returned `INPUT: ... rows=6023; unique=6023; perfect=0`, `SUBSET: ... rows=4631; unique=4631; missing=0`, and `VALIDATION PASSED` for the 2B output against the 1B catalog. The 2B output has 4,631 rows at or below 1B, so the old and new 1B subsets agree exactly (no missing and no extra). The new interval (1B, 2B] contributes **1,392** primitive bricks. A post-promotion 10M CSV is present in the local test inventory; its console regression outcome should be confirmed separately before claiming a post-promotion `EXACT SET MATCH`. Row-level arithmetic validity and preservation of the old catalog are established; independent complete enumeration of all triples through 2B has **not** been established. No perfect cuboid was found within this finite bound; this does not prove global nonexistence.
+The existing `tools/audits/validate_bricks.py` returned `INPUT: ... rows=6023; unique=6023; perfect=0`, `SUBSET: ... rows=4631; unique=4631; missing=0`, and `VALIDATION PASSED` for the 2B output against the 1B catalog. The 2B output has 4,631 rows at or below 1B, so the old and new 1B subsets agree exactly (no missing and no extra). The new interval (1B, 2B] contributes **1,392** primitive bricks. A post-promotion 10M CSV is present in the local test inventory; its console regression outcome should be confirmed separately before claiming a post-promotion `EXACT SET MATCH`. Row-level arithmetic validity and preservation of the old catalog are established; independent complete enumeration of all triples through 2B has **not** been established. No perfect cuboid was found within this finite bound; this does not prove global nonexistence.
 
 Reproduce the extended search from the repository root:
 
@@ -569,7 +569,7 @@ python -u src/odd_leg_numba_segmented.py `
 Validate a newly generated 2B output against a **preserved 1B backup** (not the updated 2B catalog):
 
 ```powershell
-python tools/validate_bricks.py `
+python tools/audits/validate_bricks.py `
   --input local_results/v0.17.0/v0170_test_2b.csv `
   --max-edge 2000000000 `
   --subset backups/verified_euler_bricks_1b.csv `
@@ -614,6 +614,22 @@ python -u src/odd_leg_numba_segmented.py `
 
 The `--reference` check compares the generated set with the matching bound-filtered catalog and is a **regression check, not independent proof of complete enumeration**. The canonical catalog and its SHA-256 manifest were **not changed** by the v0.18.0 optimization. No perfect cuboid was found within the tested bound; this is not a proof of nonexistence.
 
+## v0.19.0: bounded completeness audit (documentation phase)
+
+The v0.19.0 research review examines the active segmented-SPF v0.18.0 engine, `src/segmented_factorization.py`, and the stable `src/odd_leg_search.py` v0.9.9. **This is an audit of the existing implementation, not a new search engine, a new catalog, or a claim of formal software verification.** No v0.19.0 source change is required.
+
+The mathematical enumeration argument has three parts:
+
+1. Every primitive Euler brick has exactly one odd edge `o`. The search covers all odd `o` from 3 through the inclusive maximum-edge bound (the value 1 cannot participate in a positive Euler brick).
+2. For an integer face diagonal `h` and compatible even edge `e`, `(h-e)(h+e) = o²`. Each positive divisor `d < o` of `o²` yields `e = (o²/d - d)/2`; conversely, every such compatible positive even edge arises from one of these divisors. The code generates divisors using the prime factorization of `o` and retains only `0 < e <= bound`.
+3. In a primitive Euler brick exactly two edges are divisible by 3. Thus, when `3 | o`, a valid pair has exactly one even edge divisible by 3; otherwise both even edges must be divisible by 3. The kernel then checks the common GCD and the remaining face diagonal. `verify_brick` independently checks the final triple with exact Python integer arithmetic.
+
+**Signed-64-bit arithmetic, inclusive bound 2B:** for `B = 2,000,000,000`, both `o² <= B² = 4 × 10¹⁸` and `e1² + e2² <= 2B² = 8 × 10¹⁸` fit in signed `int64` (maximum `2⁶³ − 1`). The space-diagonal check is performed in Python arbitrary-precision integers. A conservative divisor-count bound, `τ(o²) <= 3√o` for odd `o`, gives fewer than 67,083 compatible even legs per odd value at 2B. Therefore, even an overestimate of one billion odd values times all `C(67,082, 2)` leg pairs is `2,249,963,821,000,000,000`, below `2⁶³ − 1`. This bounds the candidate/rejection counters as well as the tested pair sums. The existing three-phase v0.17.0 `int64` audit remains the historical implementation-level evidence; this argument does not authorize bounds above 2B.
+
+**Evidence boundary:** the mathematical construction and static code review support completeness of the enumeration *method*, subject to correct implementation. The previously recorded v0.18.0 2B `EXACT SET MATCH` is regression evidence against the existing catalog, not an independent proof that the catalog is exhaustive. A small-bound independent comparison using Pythagorean-pair enumeration and SPF segment sizes 1, 7, and 31 was reported during the v0.19.0 review (19 bricks through 10,000), but its runnable test and raw log are **not part of this repository**; it should not be presented as a committed or independently reproducible test. Full formal verification of Numba behavior, compiler assumptions, and every implementation path remains outside this audit.
+
+No verified catalog, manifest, source file, or archive is changed by this documentation update.
+
 ## Independent published-catalog comparison (500M)
 
 On 2026-10-19 (UTC), the local verified catalog was compared, **triple by triple**, with Giovanni Resta's table linked from [OEIS A031173](https://oeis.org/A031173). The comparison used the **strict** bound `c < 500000000` (largest edge), whereas the search engine accepts an inclusive maximum edge. All 3,556 local rows and all 3,556 reference rows were below the strict bound; hence no boundary discrepancy occurred.
@@ -647,7 +663,7 @@ Get-FileHash references/resta_a031173.txt -Algorithm SHA256
 Compare against the canonical catalog:
 
 ```powershell
-python tools/compare_oeis_resta.py `
+python tools/audits/compare_oeis_resta.py `
   --input data/verified_euler_bricks.csv `
   --resta-file references/resta_a031173.txt `
   --max-edge 500000000
@@ -657,7 +673,7 @@ The recorded 500M comparison output was `MISSING_FROM_LOCAL: 0`, `EXTRA_IN_LOCAL
 
 ## Empirical distribution analysis (v0.11.0)
 
-`tools/analyze_brick_distribution.py` reads the canonical catalog without modifying it and reports cumulative counts, new bricks per million edge units, and local log-log exponents. The historical v0.11.0 analysis through 500M used these counts (the current 2B catalog contains later bounds; the table stops at 1B):
+`tools/analysis/analyze_brick_distribution.py` reads the canonical catalog without modifying it and reports cumulative counts, new bricks per million edge units, and local log-log exponents. The historical v0.11.0 analysis through 500M used these counts (the current 2B catalog contains later bounds; the table stops at 1B):
 
 | Largest-edge bound | Cumulative primitive bricks |
 |---:|---:|
@@ -674,7 +690,7 @@ A **historical** descriptive power-law fit to the five cumulative counts from 10
 Reproduce the historical 500M holdout analysis (the current catalog also contains 1B data, but `--predict-at` selects the historical evaluation point):
 
 ```powershell
-python tools/analyze_brick_distribution.py `
+python tools/analysis/analyze_brick_distribution.py `
   --input data/verified_euler_bricks.csv `
   --log-bins 12 `
   --train-max 200000000 `
@@ -683,7 +699,7 @@ python tools/analyze_brick_distribution.py `
 
 ## Growth-model comparison and robustness (v0.12.0–v0.12.1)
 
-The read-only analysis scripts `tools/compare_growth_models.py` (v0.12.0) and `tools/compare_growth_robustness.py` (v0.12.1) use the canonical **4,631-row catalog through 1B** to compare descriptive models for the cumulative number of primitive Euler bricks with largest edge at most \(B\):
+The read-only analysis scripts `tools/analysis/compare_growth_models.py` (v0.12.0) and `tools/analysis/compare_growth_robustness.py` (v0.12.1) use the canonical **4,631-row catalog through 1B** to compare descriptive models for the cumulative number of primitive Euler bricks with largest edge at most \(B\):
 
 \[
 N(B)=CB^\alpha,\qquad
@@ -731,12 +747,12 @@ This can describe a decreasing local slope over the measured range without ident
 Reproduce the analyses from the repository root:
 
 ```powershell
-python tools/compare_growth_models.py `
+python tools/analysis/compare_growth_models.py `
   --input data/verified_euler_bricks.csv `
   --catalog-bound 1000000000 `
   --output growth_model_comparison.csv
 
-python tools/compare_growth_robustness.py `
+python tools/analysis/compare_growth_robustness.py `
   --input data/verified_euler_bricks.csv `
   --catalog-bound 1000000000 `
   --output growth_robustness_0121.csv
@@ -746,7 +762,7 @@ The generated CSV reports are reproducible local outputs and need not be committ
 
 ## Space-diagonal gap analysis (v0.13.0–v0.13.1)
 
-The read-only scripts `tools/analyze_space_diagonal.py` and `tools/analyze_space_diagonal_stability.py` examine the **4,631 primitive Euler bricks** in the historical 1B subset of the current 2B catalog. For each triple, let
+The read-only scripts `tools/analysis/analyze_space_diagonal.py` and `tools/analysis/analyze_space_diagonal_stability.py` examine the **4,631 primitive Euler bricks** in the historical 1B subset of the current 2B catalog. For each triple, let
 
 \[
 S=a^2+b^2+c^2,\qquad k=\lfloor\sqrt{S}\rfloor,
@@ -790,12 +806,12 @@ The distributions are **approximately uniform in a descriptive sense** across th
 Reproduce from the repository root in PowerShell:
 
 ```powershell
-python tools/analyze_space_diagonal.py `
+python tools/analysis/analyze_space_diagonal.py `
   --input data/verified_euler_bricks.csv `
   --max-edge 1000000000 `
   --output space_diagonal_analysis_0130.csv
 
-python tools/analyze_space_diagonal_stability.py `
+python tools/analysis/analyze_space_diagonal_stability.py `
   --input data/verified_euler_bricks.csv `
   --max-edge 1000000000 `
   --output space_diagonal_stability_0131.csv
@@ -806,9 +822,9 @@ Both CSV reports are generated outputs and can remain local rather than being co
 ## Next research steps
 
 1. **Preserve the 1B and 2B evidence:** retain the validated 6,023-row 2B catalog and manifest checksum, a backup of the prior 4,631-row 1B catalog, and independent 500M OEIS exact-set comparison.
-2. **Audit bounded completeness:** review divisor generation, candidate enumeration, numerical bounds, and implementation-level assumptions. Distinguish bounded checks from formal proofs.
+2. **Extend the v0.19.0 bounded-completeness review:** the mathematical method, divisor generation, modulo-3 partition, and 2B arithmetic bounds have been reviewed. Preserve independently runnable small-bound tests and their logs in a future reproducibility update before claiming a completed implementation-level audit.
 3. **Strengthen independent corroboration at 1B:** seek a published full triple list for exact-set comparison; currently only the published count is matched at 1B.
-4. **Maintain v0.18.0 release evidence:** preserve the v0.16.0 and v0.17.0 historical sources in their versioned archives, retain the three-phase signed-64-bit audit in `tools/audits/int64_v0170/`, and keep the active v0.18.0 source byte-identical to `archive/v0.18.0/odd_leg_numba_segmented.py`. Commit the source, archive, and README after final checks; leave the unchanged 2B catalog and manifest intact. Consider instrumented RAM measurements and further kernel profiling in future work.
+4. **Maintain v0.18.0 release evidence:** preserve the v0.16.0 and v0.17.0 historical sources in their versioned archives, retain the three-phase signed-64-bit audit in `tools/audits/int64_v0170/`, and keep the active v0.18.0 source byte-identical to `archive/v0.18.0/odd_leg_numba_segmented.py`. Leave the 2B catalog and manifest intact. Consider instrumented RAM measurements and further kernel profiling in future work.
 5. **Extend bounds only after numerical-safety review:** segmented v0.18.0 retains the v0.17.0 audited 2B bound; global-SPF v0.10.4 remains limited to 1B. A 10B extension requires new overflow-safe arithmetic. Prioritize checkpoint/resume for long Windows/Colab experiments and benchmark parallel workers. Do not assume constant total memory use.
 6. **Maintain research separation:** keep metaheuristic results in `experiments/metaheuristics/`, completed algorithm prototypes in `archive/`, and current code in `src/` and `tools/` without version suffixes. The v0.11–v0.13 distribution, growth-model, and space-diagonal analyses are completed historical studies.
 
