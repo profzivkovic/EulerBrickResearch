@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "searched_max_edge": 2000000000,
-  "brick_count": 6023,
+  "searched_max_edge": 10000000000,
+  "brick_count": 10932,
   "perfect_cuboid_count": 0,
-  "sha256": "e06394157055c226ff0074dbb246b9888a34b1293c5c284673fe14ecd33d42ab",
-  "updated_utc": "2026-10-20T22:46:03.382159+00:00",
-  "source_file": "v0170_test_2b.csv",
-  "verification": "Exact arithmetic for every stored row; completeness of generator not independently proved"
+  "sha256": "67e0a37f71041dc2b1e6d2c6ab65998b705f828001b42b8144890f2d97b376a5",
+  "updated_utc": "2026-10-24T15:56:03.040538+00:00",
+  "source_file": "euler_bricks_10b_verified_candidate.csv",
+  "verification": "Exact integer validation of all 10932 primitive Euler bricks; exact-set agreement with all 6023 previous catalog rows through 2B; 5000/5000 checkpoint chunks completed and verified; enumeration completeness not independently proved"
 }
