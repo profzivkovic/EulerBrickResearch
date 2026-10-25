@@ -2,7 +2,7 @@
 
 Reproducible, exact-integer research into **Euler bricks** and the **perfect cuboid problem**, using exact integer arithmetic in Python, with NumPy/Numba-accelerated global-SPF and segmented-SPF odd-leg engines.
 
-**Project status (2026-10-24):** the experimental overflow-safe v0.20.0 checkpointed odd-leg search completed the inclusive **10,000,000,000 (10B)** maximum-edge bound: **10,932 distinct primitive Euler bricks**, **50,000 segments**, and **5,000/5,000 durable checkpoints**. The new 10B CSV passed local SHA-256 transfer verification, exact set equality against all **6,023** entries of the previous 2B catalog, and independent Python-integer validation of all 10,932 triples. The stable segmented-SPF engine remains **v0.18.0**, with its separately audited signed-64-bit ceiling of **2B**; v0.20.0 is an experimental extension, not a replacement for the stable engine. Historical v0.7.2 systematic and v0.9.9 independent odd-leg searches remain documented below. The published Giovanni Resta/OEIS triple-by-triple agreement covers **3,556** bricks strictly below 500M; published 1B count agreement is not a full independent set comparison. The 10B run is a completed computational enumeration, **not** an independent proof of implementation-level completeness.
+**Project status (2026-10-25):** the experimental overflow-safe **v0.21.0** checkpointed odd-leg search completed the inclusive **20,000,000,000 (20B)** maximum-edge bound: **14,010 distinct primitive Euler bricks**, **100,000 segments**, and **10,000/10,000 durable checkpoints**. Reconstruction from sealed Google Drive checkpoints passed **10,000 SHA-256 checks**, exact Python-integer validation of all 14,010 triples, and **EXACT SET MATCH** for all **10,932** previous bricks through 10B; **3,078** additional bricks lie above 10B. The canonical CSV has SHA-256 `a810bbdd6280d5d7e5cc74665bc5b1388e6179abbb5f326f208a736a12bb3a41`. The stable segmented-SPF engine remains **v0.18.0**, separately audited to **2B**; v0.21.0 is experimental. Independent published triple-by-triple corroboration remains limited to **3,556** bricks strictly below 500M. This is a completed computational enumeration, **not** an independent proof of implementation-level completeness.
 
 > **Scientific scope:** No perfect cuboid was found in the finite searches and experiments reported here. This is **not a proof of nonexistence**. Exact validation certifies the arithmetic properties of reported rows, but does not by itself establish that a search implementation has found every solution within its bound. Heuristic experiments make no completeness claim.
 
@@ -47,14 +47,16 @@ tools/
     colab_checkpoint_sync_v0180.py
     checkpoint_parallel_v0200.py     # experimental resumable 10B runner
     colab_checkpoint_sync_v0200.py   # VM/Google Drive durable mirror
+    checkpoint_parallel_v0210.py     # experimental resumable 20B runner
+    colab_checkpoint_sync_v0210.py   # 20B VM/Google Drive durable mirror
 data/
-  verified_euler_bricks.csv           # canonical catalog (10B after promotion)
+  verified_euler_bricks.csv           # canonical catalog (20B after promotion)
   verified_manifest.json             # check bound/hash before treating as current
 experiments/metaheuristics/
 archive/                               # preserved historical implementations
 ```
 
-The tree highlights principal files, not every utility. Keep generated checkpoint directories and intermediate CSVs out of Git. The 10B Drive checkpoint mirror is an external reproducibility artifact, not a committed repository directory. The previous 2B catalog remains recoverable through Git history. **Manifest consistency must be checked separately:** copying a new CSV does not update `data/verified_manifest.json`; its recorded bound, count and checksum must match the canonical CSV before calling the catalog/manifest pair synchronized.
+The tree highlights principal files, not every utility. Keep generated checkpoint directories and intermediate CSVs out of Git. The 10B and 20B Drive checkpoint mirrors are external reproducibility artifacts, not a committed repository directory. The previous 2B catalog remains recoverable through Git history. **Manifest consistency must be checked separately:** copying a new CSV does not update `data/verified_manifest.json`; its recorded bound, count and checksum must match the canonical CSV before calling the catalog/manifest pair synchronized.
 
 ## Historical systematic graph search: v0.7.2
 
@@ -75,7 +77,7 @@ The 20M timing is approximate because its initial run encountered a missing refe
 
 The **100M** run reported 231.096 s for pair generation, 1,899.320 s for segment processing, and 2.174 s for consolidation. The independent CSV validator reported **1,884 rows, 1,884 unique primitive Euler bricks, zero perfect cuboids**, and confirmed that all **1,395** entries in the 50M catalog occur in the 100M result. These checks establish row-level arithmetic validity and preservation of the previous catalog; they are not an independent proof of enumeration completeness.
 
-The current verified catalog (extended from **2B** to **10B** in October 2026) is maintained at `data/verified_euler_bricks.csv`, with metadata and a SHA-256 checksum in `data/verified_manifest.json`. Raw outputs such as `bricks_100m.csv` are separate from the canonical catalog.
+The current verified catalog (extended from **10B** to **20B** in October 2026) is maintained at `data/verified_euler_bricks.csv`, with metadata and a SHA-256 checksum in `data/verified_manifest.json`. Raw outputs such as `bricks_100m.csv` are separate from the canonical catalog.
 
 ### Reproduce a bounded search
 
@@ -109,9 +111,9 @@ python tools/audits/validate_bricks.py `
   --subset-max-edge 50000000
 ```
 
-The subset bound above illustrates a **historical 50M-to-100M upgrade**. The current verified catalog is now at 10B; do not rerun this historical upgrade against the current catalog. For future updates, use the actual catalog bound recorded in `data/verified_manifest.json`. The validator checks sorted positive edges, bound, primitivity, all three integer face diagonals, uniqueness, and any supplied CSV metadata (including the space-diagonal tests and normalized gap).
+The subset bound above illustrates a **historical 50M-to-100M upgrade**. The current verified catalog is now at 20B; do not rerun this historical upgrade against the current catalog. For future updates, use the actual catalog bound recorded in `data/verified_manifest.json`. The validator checks sorted positive edges, bound, primitivity, all three integer face diagonals, uniqueness, and any supplied CSV metadata (including the space-diagonal tests and normalized gap).
 
-Historical example only (do not run against the current 10B catalog):
+Historical example only (do not run against the current 20B catalog):
 
 ```powershell
 python tools/catalog/update_verified_catalog.py `
@@ -123,12 +125,12 @@ python tools/catalog/update_verified_catalog.py `
 
 The updater independently checks every incoming triple, validates the existing catalog against its manifest and SHA-256 checksum, rejects a decreasing bound, and requires the incoming set to include **all** previously cataloged bricks. It then writes a canonical, deduplicated catalog and updated manifest. It does **not** silently repair a missing old result by taking a union.
 
-Validate the current 10B catalog:
+Validate the current 20B catalog:
 
 ```powershell
 python tools/audits/validate_bricks.py `
   --input data/verified_euler_bricks.csv `
-  --max-edge 2000000000
+  --max-edge 20000000000
 ```
 
 The confirmed historical 2B result was `rows=6023; unique=6023; perfect=0` and `VALIDATION PASSED`. The former 1B catalog contained 4,631 rows. The updater's two-file replacement is not a single atomic transaction; if interrupted, its checksum check can detect an inconsistent catalog/manifest pair on a subsequent run.
@@ -363,7 +365,7 @@ python -u src/odd_leg_numba.py `
   --progress-every 10000000
 ```
 
-Validate the raw output against a preserved 500M catalog (not against the current 10B catalog as an unfiltered subset):
+Validate the raw output against a preserved 500M catalog (not against the current 20B catalog as an unfiltered subset):
 
 ```powershell
 python tools/audits/validate_bricks.py `
@@ -386,7 +388,7 @@ python src/odd_leg_numba.py `
   --output odd_leg_numba_104_200m.csv
 ```
 
-Expected result: 2,509 primitive bricks and zero perfect cuboids. **Do not use the current 10B catalog as `--reference` for this 200M run:** the reference comparison requires the same bound and will reject the additional catalog rows. To reproduce the historical `EXACT SET MATCH`, use a separately preserved 200M reference CSV. The SPF array alone occupies approximately 800 MB at 200M; total process memory is higher. The program currently restricts `--max-edge` to at most 1,000,000,000 for signed-64-bit arithmetic, and the 1B run completed successfully; adequate available RAM is still required for reproduction.
+Expected result: 2,509 primitive bricks and zero perfect cuboids. **Do not use the current 20B catalog as `--reference` for this 200M run:** the reference comparison requires the same bound and will reject the additional catalog rows. To reproduce the historical `EXACT SET MATCH`, use a separately preserved 200M reference CSV. The SPF array alone occupies approximately 800 MB at 200M; total process memory is higher. The program currently restricts `--max-edge` to at most 1,000,000,000 for signed-64-bit arithmetic, and the 1B run completed successfully; adequate available RAM is still required for reproduction.
 
 ### Bounded audit of the stable odd-leg engine
 
@@ -527,7 +529,7 @@ Reproduce the 500M comparison with process-tree memory sampling (run sequentiall
   --progress-every 10000000
 ```
 
-The global run requires several GiB of RAM. The reference option on the segmented run compares against the 500M subset of the current 10B catalog. The two generated output files are separate local artifacts, not replacements for the canonical catalog.
+The global run requires several GiB of RAM. The reference option on the segmented run compares against the 500M subset of the current 20B catalog. The two generated output files are separate local artifacts, not replacements for the canonical catalog.
 
 Use `tools/benchmarks/benchmark_segments.py` for segment-size comparisons. Generated benchmark CSVs and run outputs are local artifacts, separate from the canonical verified catalog. Neither a finite exact-set match nor the absence of perfect cuboids resolves the perfect cuboid problem.
 
@@ -654,7 +656,7 @@ The Colab checkpoint reconstruction created `euler_bricks_10b_verified_candidate
 
 The locally downloaded CSV matched that digest. An independent exact-set check normalized `(a,b,c)` triples and compared the **entire old 2B set** against the new 10B subset with `c <= 2,000,000,000`: **6,023 versus 6,023; missing=0; extra=0**. Separate Python `math.gcd`/`math.isqrt` validation found **10,932 unique primitive bricks**, three integral face diagonals per row, and all edges `<= 10B`. These checks establish file integrity, continuity with the previous catalog, and arithmetic correctness of every reported triple. They do **not**, by themselves, establish that the enumerator omitted no valid brick.
 
-**Canonical catalog / manifest:** the promoted 10B CSV has the SHA-256 above if copied byte-for-byte into `data/verified_euler_bricks.csv`. The earlier 2B digest was `e06394157055c226ff0074dbb246b9888a34b1293c5c284673fe14ecd33d42ab`. Do not assume the existing `data/verified_manifest.json` has been updated merely because the CSV was replaced. Check and synchronize its bound, count and checksum using the guarded catalog workflow before relying on it as current metadata.
+**Historical 10B catalog:** the promoted 10B CSV had the SHA-256 above. The earlier 2B digest was `e06394157055c226ff0074dbb246b9888a34b1293c5c284673fe14ecd33d42ab`. The canonical catalog has since advanced to 20B; its manifest must be checked against the 20B bound, 14,010 rows, and the 20B SHA-256 recorded below.
 
 ### Resume on Google Colab
 
@@ -677,6 +679,66 @@ python -u tools/runners/colab_checkpoint_sync_v0200.py \
 The runner writes to the VM disk, restores durable chunks from Drive on startup, and mirrors new sealed checkpoints to Drive during execution. Keep the same search parameters and source/checkpoint identity when resuming; preserve the original Drive directory. `--experimental-no-reference` means the 10B result was **not** compared with a pre-existing full 10B reference set. The checkpoint files were needed to reconstruct the CSV because the original run did not separately publish a final CSV. Downloading a Drive *folder* as ZIP was observed to omit files; reconstructing one checked CSV on Colab and downloading that single file avoided the incomplete-folder transfer.
 
 The stable `src/odd_leg_numba_segmented.py` remains capped at 2B; do not apply this 10B command to the stable v0.18.0 engine. Neither 100B nor 1000B has been fully searched.
+
+## Experimental 20B checkpointed search: v0.21.0 (2026-10-25)
+
+The v0.21.0 experimental runner (`tools/runners/checkpoint_parallel_v0210.py`) and Google Drive mirror (`tools/runners/colab_checkpoint_sync_v0210.py`) extend the v0.20.0 checkpoint workflow to an inclusive **20B** maximum edge. The arithmetic kernel remains `src/odd_leg_numba_1000b_experimental.py` with `src/safe_arithmetic_1000b.py`; the stable v0.18.0 engine and its audited 2B limit are unchanged. The v0.21.0 runner requires `--confirm-20b --experimental-no-reference` above 10B. Its checkpoint format/source identity is separate from the 10B run.
+
+Before the full run, a 1M regression found **242** bricks with `PASS EXACT SET MATCH`, and a second invocation resumed **1/1** chunks with **0** pending and no recomputation. An arithmetic audit (`tools/audits/audit_arithmetic_1000b.py --src-dir src --random-pairs 10000`) completed with exit code **0** after using a separate Numba cache; its square-check stage reported **30,091** exact-square checks and **60,182** `u128` square checks. A separate Drive test mirrored the 1M result and restored **3** files into an empty VM directory, resuming **1/1** chunks. These are bounded tests, not proof of full implementation correctness.
+
+The complete 20B Google Colab CPU run used **2 workers**, **100,000 odd values per segment**, and **10 segments per chunk**. It began with a deliberately stopped **3-chunk** run and then resumed using the same checkpoint identity. The final log reported:
+
+| Recorded 20B metric | Value |
+|---|---:|
+| Inclusive maximum edge | **20,000,000,000** |
+| Distinct primitive Euler bricks | **14,010** |
+| Additional bricks above 10B | **3,078** |
+| Primitive candidate pairs tested | **221,421,449,822** |
+| Nonprimitive candidate pairs rejected | **351,680,484,640** |
+| SPF segments | **100,000** |
+| Durable checkpoint chunks | **10,000 / 10,000** |
+| Parallel CPU workers | **2** |
+| Segment size / segments per chunk | **100,000 / 10** |
+| Final invocation | `new=2838; wall_this_run=36854.205s` |
+| Runner result | `PASS BRICKS VERIFIED (NO CATALOG)` |
+| Drive result | `PASS DURABLE MIRROR bricks=14010 chunks=10000` |
+
+The **36,854.205 s** wall time is for the final invocation, **not** the aggregate wall time across all Colab sessions. `NO CATALOG` means the 20B run had no pre-existing full 20B reference; its reported triples were verified, but no full external 20B set comparison occurred.
+
+### 20B checkpoint reconstruction and exact validation
+
+The completed Drive checkpoint directory is `/content/drive/MyDrive/EulerBrickResearch/checkpoints_20b_v0210`. Reconstruction read all **10,000** sealed chunk JSON files, checked each SHA-256, verified the recorded intervals and aggregate counters, and independently checked every resulting triple for sorted positive edges, `gcd(a,b,c)=1`, and three integral face diagonals using Python `math.isqrt`. The results were **14,010 unique primitive Euler bricks** and the same tested/rejected counters as the final runner log.
+
+The subset with `c <= 10,000,000,000` contained **10,932** triples and matched the entire previous 10B catalog exactly: **missing=0, extra=0**. The interval `(10B, 20B]` contributes **3,078** new triples. This establishes catalog continuity and arithmetic validity of the stored rows; it does **not** independently prove completeness of the search implementation. A separate 20B space-diagonal audit should be recorded before asserting a 20B perfect-cuboid count.
+
+The reconstructed candidate CSV is `euler_bricks_20b_verified_candidate.csv`, **431,960 bytes**, with SHA-256:
+
+```text
+a810bbdd6280d5d7e5cc74665bc5b1388e6179abbb5f326f208a736a12bb3a41
+```
+
+After byte-identical promotion, `data/verified_euler_bricks.csv` should have the same SHA-256. **Manifest synchronization is a separate step**: `data/verified_manifest.json` must record `searched_max_edge=20000000000`, `brick_count=14010`, and the digest above before the pair is treated as synchronized. Keep the 10B and 20B Drive checkpoints unchanged and outside Git.
+
+### Resume completed 20B checkpoints on Colab
+
+With Google Drive mounted, from `/content/EulerBrickResearch`:
+
+```bash
+python -u tools/runners/colab_checkpoint_sync_v0210.py \
+  --max-edge 20000000000 \
+  --workers 2 \
+  --segment-odds 100000 \
+  --chunk-segments 10 \
+  --local-dir /content/ebr_20b_v0210 \
+  --drive-dir /content/drive/MyDrive/EulerBrickResearch/checkpoints_20b_v0210 \
+  --src-dir /content/EulerBrickResearch/src \
+  --confirm-20b \
+  --experimental-no-reference \
+  --progress-seconds 30 \
+  --sync-seconds 2
+```
+
+This is a **resume/verification command**, not a request to repeat the completed search. It must use the same runner, source identity, and segmentation parameters. Do not delete the durable checkpoint directory or rerun the full computation to recreate the CSV.
 
 ## Independent published-catalog comparison (500M)
 
@@ -717,11 +779,11 @@ python tools/audits/compare_oeis_resta.py `
   --max-edge 500000000
 ```
 
-The recorded 500M comparison output was `MISSING_FROM_LOCAL: 0`, `EXTRA_IN_LOCAL: 0`, and `EXACT SET MATCH`. The comparison script filters the current 10B canonical catalog to the strict 500M bound, so the same historical comparison remains reproducible. The checksum identifies the exact external reference snapshot used. This **independently corroborates the catalog against a published enumeration**; it is not a formal proof of completeness of either enumerator or a resolution of the perfect cuboid problem. Keep `references/resta_a031173.txt` excluded from Git (see `.gitignore`).
+The recorded 500M comparison output was `MISSING_FROM_LOCAL: 0`, `EXTRA_IN_LOCAL: 0`, and `EXACT SET MATCH`. The comparison script filters the current 20B canonical catalog to the strict 500M bound, so the same historical comparison remains reproducible. The checksum identifies the exact external reference snapshot used. This **independently corroborates the catalog against a published enumeration**; it is not a formal proof of completeness of either enumerator or a resolution of the perfect cuboid problem. Keep `references/resta_a031173.txt` excluded from Git (see `.gitignore`).
 
 ## Empirical distribution analysis (v0.11.0)
 
-`tools/analysis/analyze_brick_distribution.py` reads the canonical catalog without modifying it and reports cumulative counts, new bricks per million edge units, and local log-log exponents. The historical v0.11.0 analysis through 500M used these counts (the current 10B catalog contains later bounds; the table stops at 1B):
+`tools/analysis/analyze_brick_distribution.py` reads the canonical catalog without modifying it and reports cumulative counts, new bricks per million edge units, and local log-log exponents. The historical v0.11.0 analysis through 500M used these counts (the current 20B catalog contains later bounds; the table stops at 1B):
 
 | Largest-edge bound | Cumulative primitive bricks |
 |---:|---:|
@@ -810,7 +872,7 @@ The generated CSV reports are reproducible local outputs and need not be committ
 
 ## Space-diagonal gap analysis (v0.13.0–v0.13.1)
 
-The read-only scripts `tools/analysis/analyze_space_diagonal.py` and `tools/analysis/analyze_space_diagonal_stability.py` examine the **4,631 primitive Euler bricks** in the historical 1B subset of the current 10B catalog. For each triple, let
+The read-only scripts `tools/analysis/analyze_space_diagonal.py` and `tools/analysis/analyze_space_diagonal_stability.py` examine the **4,631 primitive Euler bricks** in the historical 1B subset of the current 20B catalog. For each triple, let
 
 \[
 S=a^2+b^2+c^2,\qquad k=\lfloor\sqrt{S}\rfloor,
@@ -869,11 +931,11 @@ Both CSV reports are generated outputs and can remain local rather than being co
 
 ## Next research steps
 
-1. **Finalize canonical metadata:** ensure `data/verified_manifest.json` matches the 10B CSV (bound, 10,932 rows and SHA-256), and check any scripts that assume the whole catalog ends at 2B. Preserve the old 2B state in Git history.
-2. **Preserve the 10B evidence:** retain all 5,000 Drive checkpoint chunks, the run summary, the checked 10B CSV digest and the exact 2B subset-comparison results. Keep intermediate archives and local CSV copies out of the committed catalog unless intentionally versioned.
-3. **Strengthen completeness evidence:** develop an independently implemented enumerator or external full-triple comparison beyond 500M, plus implementation-level audits of the v0.20.0 kernel, counters and checkpoint semantics.
-4. **Benchmark larger bounds before attempting them:** the arithmetic audits include selected cases through 1000B, but neither runtime, checkpoint storage nor complete searches at 100B/1000B are validated. Preserve v0.18.0 as the stable 2B baseline.
-5. **Maintain research separation:** keep the historical metaheuristic, distribution, growth-model and space-diagonal results distinct from the experimental 10B enumeration and from claims about the perfect cuboid problem.
+1. **Synchronize 20B metadata:** confirm the canonical CSV SHA-256 `a810bbdd6280d5d7e5cc74665bc5b1388e6179abbb5f326f208a736a12bb3a41`, 14,010 rows, and manifest bound of 20B before committing the catalog/manifest/README together on `main`.
+2. **Preserve completed evidence:** retain the 10B (5,000 chunks) and 20B (10,000 chunks) durable Google Drive checkpoints, run logs, candidate CSV digests, and exact prior-subset comparisons. Avoid committing duplicate candidate CSVs or checkpoint directories.
+3. **Complete a dedicated 20B space-diagonal check** and record the result without inferring it solely from the runner's face-diagonal validation.
+4. **Profile before 50B:** isolate segmented factorization, fused Numba kernel time, multiprocessing overhead, and Drive mirroring; test optimizations separately from the completed v0.21.0 checkpoints. Targeted arithmetic tests through 1000B do not authorize a full 50B, 100B, or 1000B search without further testing.
+5. **Strengthen completeness evidence:** seek an independently implemented enumerator or an external full-triple comparison beyond 500M, and audit implementation-level arithmetic, counters, and checkpoint semantics. Preserve v0.18.0 as the stable 2B baseline.
 
 ## Reproducibility and integrity
 
