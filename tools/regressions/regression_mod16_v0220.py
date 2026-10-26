@@ -1,6 +1,6 @@
-"""Exact segment-by-segment v0.21 vs v0.22 comparison, with timing.
+﻿"""Exact segment-by-segment v0.21 vs v0.22 comparison, with timing.
 
-Run from repository root: python tools/benchmarks/regression_mod16_v0220.py
+Run from repository root: python tools/regressions/regression_mod16_v0220.py
 Does not write catalogs, checkpoints, or change the production runner.
 """
 import argparse
@@ -72,3 +72,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

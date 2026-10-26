@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 from numba import njit
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "src"))
 import segmented_factorization as factor
 import odd_leg_numba_1000b_experimental as engine

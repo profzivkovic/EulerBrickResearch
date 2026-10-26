@@ -1,9 +1,9 @@
-"""Read-only integration regression: v0.21.0 SPF vs Numba SPF, same original kernel.
+﻿"""Read-only integration regression: v0.21.0 SPF vs Numba SPF, same original kernel.
 
 Usage:
-  python tools/benchmarks/regression_spf_numba_v0220.py --max-edge 100000
-  python tools/benchmarks/regression_spf_numba_v0220.py --max-edge 1000000
-  python tools/benchmarks/regression_spf_numba_v0220.py --max-edge 10000000
+  python tools/regressions/regression_spf_numba_v0220.py --max-edge 100000
+  python tools/regressions/regression_spf_numba_v0220.py --max-edge 1000000
+  python tools/regressions/regression_spf_numba_v0220.py --max-edge 10000000
 """
 from __future__ import annotations
 
@@ -133,3 +133,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

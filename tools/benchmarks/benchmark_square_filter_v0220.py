@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 from numba import njit
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'src'))
 from safe_arithmetic_1000b import is_square_sum
 
